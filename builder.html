@@ -52,7 +52,7 @@ const load=a=>{state=a.map(x=>node(x.type,x.props));sel=null;commit(true)};
 function save(){try{localStorage.setItem('kv-builder',JSON.stringify(state.map(({type,props})=>({type,props}))))}catch(e){}}
 function commit(now){clearTimeout(tm);const go=()=>{const s=JSON.stringify(state.map(({type,props})=>({type,props})));if(hist[hi]!==s){hist=hist.slice(0,hi+1);hist.push(s);hi=hist.length-1}save()};now?go():tm=setTimeout(go,400);draw();insp()}
 function restore(i){if(i<0||i>=hist.length)return;hi=i;state=JSON.parse(hist[i]).map(x=>node(x.type,x.props));sel=null;save();draw();insp()}
-function draw(){const iw=frame.contentWindow;if(!iw||!iw.UI||!iw.KV)return;const d=iw.document,app=d.getElementById('app'),y=iw.scrollY;app.replaceChildren();
+function draw(){const iw=frame.contentWindow;if(!iw||!iw.UI||!iw.KV){const d=iw&&iw.document,app=d&&d.getElementById('app');if(app)app.textContent='Preview library failed to load — check the connection and reload the page.';return;}const d=iw.document,app=d.getElementById('app'),y=iw.scrollY;app.replaceChildren();
  if(!state.length){const e=d.createElement('div');e.className='bd-empty';e.textContent='Click or drag a component to start';app.append(e)}
  state.forEach(n=>{const w=d.createElement('div');w.className='bd-block'+(n.id===sel?' sel':'');w.dataset.id=n.id;w.dataset.type=n.type;
   try{w.append(new Function('UI','return '+C[n.type].make.toString())(iw.UI)(n.props).render())}catch(e){w.textContent='Error: '+e.message}
