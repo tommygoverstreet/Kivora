@@ -1,0 +1,98 @@
+{
+  "blank": {
+    "name": "Blank page",
+    "spec": []
+  },
+  "saas": {
+    "name": "SaaS landing",
+    "spec": [
+      {
+        "type": "navbar"
+      },
+      {
+        "type": "hero"
+      },
+      {
+        "type": "features"
+      },
+      {
+        "type": "stats"
+      },
+      {
+        "type": "chart"
+      },
+      {
+        "type": "pricing"
+      },
+      {
+        "type": "faq"
+      },
+      {
+        "type": "cta"
+      },
+      {
+        "type": "footer"
+      }
+    ]
+  },
+  "report": {
+    "name": "Business report",
+    "spec": [
+      {
+        "type": "hero",
+        "props": {
+          "eyebrow": "Quarterly report",
+          "title": "Q4 Business Review",
+          "text": "Highlights and next steps.",
+          "btn1": "",
+          "btn2": ""
+        }
+      },
+      {
+        "type": "stats"
+      },
+      {
+        "type": "chart"
+      },
+      {
+        "type": "table"
+      },
+      {
+        "type": "timeline"
+      },
+      {
+        "type": "footer"
+      }
+    ]
+  },
+  "pricing": {
+    "name": "Pricing page",
+    "spec": [
+      {
+        "type": "navbar"
+      },
+      {
+        "type": "hero",
+        "props": {
+          "eyebrow": "Pricing",
+          "title": "Simple, transparent plans",
+          "text": "Pick a plan and upgrade anytime.",
+          "btn1": "",
+          "btn2": ""
+        }
+      },
+      {
+        "type": "pricing"
+      },
+      {
+        "type": "faq"
+      },
+      {
+        "type": "cta"
+      },
+      {
+        "type": "footer"
+      }
+    ]
+  }
+}
