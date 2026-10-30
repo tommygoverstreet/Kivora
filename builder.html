@@ -50,7 +50,7 @@ const nid=()=>'n'+(++uid);
 const node=(t,p)=>({id:nid(),type:t,props:Object.assign(clone(C[t].props),p||{})});
 const load=a=>{state=a.map(x=>node(x.type,x.props));sel=null;commit(true)};
 function save(){try{localStorage.setItem('kv-builder',JSON.stringify(state.map(({type,props})=>({type,props}))))}catch(e){}}
-function commit(now){clearTimeout(tm);const go=()=>{const s=JSON.stringify(state.map(({type,props})=>({type,props})));if(hist[hi]!==s){hist=hist.slice(0,hi+1);hist.push(s);hi=hist.length-1}save()};now?go():tm=setTimeout(go,400);draw();insp()}
+function commit(now,skipInsp){clearTimeout(tm);const go=()=>{const s=JSON.stringify(state.map(({type,props})=>({type,props})));if(hist[hi]!==s){hist=hist.slice(0,hi+1);hist.push(s);hi=hist.length-1}save()};now?go():tm=setTimeout(go,400);draw();if(!skipInsp)insp()}
 function restore(i){if(i<0||i>=hist.length)return;hi=i;state=JSON.parse(hist[i]).map(x=>node(x.type,x.props));sel=null;save();draw();insp()}
 function draw(){const iw=frame.contentWindow;if(!iw||!iw.UI||!iw.KV){const d=iw&&iw.document,app=d&&d.getElementById('app');if(app)app.textContent='Preview library failed to load — check the connection and reload the page.';return;}const d=iw.document,app=d.getElementById('app'),y=iw.scrollY;app.replaceChildren();
  if(!state.length){const e=d.createElement('div');e.className='bd-empty';e.textContent='Click or drag a component to start';app.append(e)}
@@ -69,7 +69,7 @@ function insp(){const box=$('#insp'),n=state.find(x=>x.id===sel);box.replaceChil
  if(!n){box.append(h('h4',{},'Properties'),h('p',{class:'kv-muted'},'Select a block in the preview to edit it. Click or drag components from the left to add them.'));return}
  box.append(h('h4',{},'Editing'),h('h3',{},C[n.type].label),h('div',{class:'acts'},...[['↑ Up',()=>move(-1)],['↓ Down',()=>move(1)],['Duplicate',dup],['Delete',del]].map(([l,f])=>new UI.reg.Btn({label:l,size:'sm',variant:'outline',onClick:f}).render())));
  C[n.type].fields.forEach(([k,label,type,opts])=>{const v=n.props[k],id='f_'+k;let inp;
-  const set=val=>{n.props[k]=val;commit()};
+  const set=val=>{n.props[k]=val;commit(false,true)};
   if(type==='textarea'||type==='json'){inp=h('textarea',{class:'kv-input',id,rows:type==='json'?8:4,spellcheck:'false'});inp.value=type==='json'?JSON.stringify(v,null,1):v??'';
    inp.addEventListener('input',()=>{if(type==='json'){try{set(JSON.parse(inp.value));inp.classList.remove('bad')}catch(e){inp.classList.add('bad')}}else set(inp.value)})}
   else if(type==='select'){inp=h('select',{class:'kv-input',id},opts.map(o=>h('option',{value:o},o)));inp.value=v;inp.addEventListener('change',()=>set(inp.value))}
@@ -85,9 +85,9 @@ const pal=$('#pal');Object.entries(C).forEach(([t,c])=>{const b=h('button',{clas
  b.addEventListener('click',()=>add(t));b.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',t);document.body.classList.add('dragging')});b.addEventListener('dragend',()=>document.body.classList.remove('dragging'));pal.append(b)});
 const dz=$('#drop');dz.addEventListener('dragover',e=>e.preventDefault());dz.addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('dragging');const t=e.dataTransfer.getData('text/plain');if(!C[t])return;
  const fr=frame.getBoundingClientRect(),y=e.clientY-fr.top,bl=[...frame.contentDocument.querySelectorAll('.bd-block')];let i=bl.findIndex(b=>{const r=b.getBoundingClientRect();return y<r.top-fr.top+r.height/2});add(t,i<0?state.length:i)});
-const ps=$('#preset');Object.entries(PRESETS).forEach(([k,[l]])=>ps.append(h('option',{value:k},k==='blank'?'Start from…':l)));ps.addEventListener('change',()=>{if(ps.value&&(!state.length||confirm('Replace the current page?')))load(PRESETS[ps.value][1]);ps.value='blank'});
+const ps=$('#preset');Object.entries(PRESETS).forEach(([k,[l]])=>ps.append(h('option',{value:k},k==='blank'?'Start from…':l)));let presetArmed=false,presetTimer;ps.addEventListener('change',()=>{const v=ps.value;if(!v)return;if(state.length&&!presetArmed){presetArmed=true;KV.toast('Choose again to replace the current page','orange');ps.value='blank';clearTimeout(presetTimer);presetTimer=setTimeout(()=>presetArmed=false,5000);return}presetArmed=false;load(PRESETS[v][1]);ps.value='blank'});
 $('#undo').onclick=()=>restore(hi-1);$('#redo').onclick=()=>restore(hi+1);
-$('#clear').onclick=()=>{if(!state.length||confirm('Clear the page?')){state=[];sel=null;commit(true)}};
+let clearArmed=false,clearTimer;const clearBtn=$('#clear');clearBtn.onclick=()=>{if(!state.length)return;if(!clearArmed){clearArmed=true;clearBtn.textContent='Click again to clear';clearTimeout(clearTimer);clearTimer=setTimeout(()=>{clearArmed=false;clearBtn.textContent='Clear'},3000);return}clearArmed=false;clearBtn.textContent='Clear';state=[];sel=null;commit(true)};
 $('#export').onclick=()=>dl('page.html',html(),'text/html');$('#copy').onclick=()=>navigator.clipboard.writeText(html()).then(()=>KV.toast('HTML copied','mint'));
 $('#json').onclick=()=>dl('page.json',JSON.stringify(state.map(({type,props})=>({type,props})),null,1),'application/json');
 $('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{load(JSON.parse(t).filter(x=>C[x.type]))}catch(err){KV.toast('Invalid JSON file','red')}})};
