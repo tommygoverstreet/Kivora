@@ -1,0 +1,100 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kivora Code Editor</title>
+<style>
+:root{--bg:#1d2033;--pn:#262a41;--ln:#3a3f5e;--fg:#e8e9f2;--mu:#9a9db8;--y:#F4CE2F;--o:#F58020;--r:#D23958;--b:#0479CE;--m:#25C29C;--c:#009AD5;--sz:50%}
+body.light{--bg:#fff;--pn:#f3f3f6;--ln:#d8d9e2;--fg:#2B2E42;--mu:#6b6e85}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{display:grid;grid-template-rows:auto 1fr;background:var(--bg);color:var(--fg);font:14px/1.4 "Avenir Next LT Pro",Avenir,Calibri,Arial,sans-serif}
+.tb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px 12px;background:var(--pn);border-bottom:1px solid var(--ln)}.tb a{color:var(--mu);text-decoration:none}.tb .sp{flex:1}
+button,select,label.bt{background:var(--bg);color:var(--fg);border:1px solid var(--ln);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}button:hover{border-color:var(--y)}button.go{background:var(--y);color:#2B2E42;border-color:var(--y);font-weight:700}
+.main{display:grid;min-height:0;grid-template-columns:var(--sz) 6px 1fr;grid-template-rows:1fr}.main.top{grid-template-columns:1fr;grid-template-rows:var(--sz) 6px 1fr}
+.eds{display:grid;grid-template-columns:repeat(3,1fr);min-height:0;min-width:0}.main:not(.top) .eds{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr)}
+.ed{display:flex;flex-direction:column;min-height:0;min-width:0;border-right:1px solid var(--ln);border-bottom:1px solid var(--ln)}.ed>b{padding:4px 12px;background:var(--pn);font-size:12px;letter-spacing:.1em;color:var(--mu)}.ed .box{position:relative;flex:1;min-height:0}
+.box pre,.box textarea{position:absolute;inset:0;margin:0;padding:12px;border:0;font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;overflow:auto;tab-size:2;letter-spacing:0}
+.box pre{pointer-events:none;color:var(--fg)}.box textarea{background:transparent;color:transparent;caret-color:var(--y);resize:none;outline:0}.box textarea::selection{background:rgba(4,121,206,.45);color:transparent}
+.t{color:var(--r)}.a{color:var(--o)}.s{color:var(--m)}.c{color:var(--mu);font-style:italic}.k{color:var(--c)}.n{color:var(--y)}.p{color:var(--b)}body.light .t{color:#c0264a}body.light .s{color:#0d8a6c}body.light .n{color:#b58a00}
+.gut{background:var(--ln);cursor:col-resize}.main.top .gut{cursor:row-resize}
+.res{display:grid;grid-template-rows:1fr auto;min-height:0;min-width:0;background:#fff}.res .vw{display:flex;justify-content:center;background:#c9ccd8;min-height:0}iframe{border:0;background:#fff;height:100%;width:100%;transition:width .25s}
+.con{background:var(--bg);border-top:1px solid var(--ln);max-height:30vh;overflow:auto;font:12px ui-monospace,Consolas,monospace}.con>div{padding:3px 12px;border-bottom:1px solid var(--ln);white-space:pre-wrap}.con .error{color:#ff7a93}.con .warn{color:var(--y)}.con header{position:sticky;top:0;background:var(--pn);padding:4px 12px;display:flex;gap:8px;justify-content:space-between;color:var(--mu);font:12px sans-serif}
+@media(max-width:800px){.main,.main.top{grid-template-columns:1fr;grid-template-rows:55% 6px 1fr}.eds,.main:not(.top) .eds{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr)}}
+</style></head><body>
+<div class="tb"><strong>Code Editor</strong><a href="index.html">Home</a><a href="builder.html">Visual Builder</a><span class="sp"></span>
+<select id="tpl" aria-label="Template"></select><button class="go" id="run">▶ Run</button><label class="bt"><input type="checkbox" id="auto" checked> Auto-run</label><label class="bt"><input type="checkbox" id="lib" checked> Kivora UI</label>
+<select id="pw" aria-label="Preview width"><option value="100%">Full width</option><option value="768px">Tablet</option><option value="390px">Mobile</option></select><button id="lay">Layout</button><button id="theme">Theme</button><button id="save">Save</button><button id="dl">Download</button><button id="cp">Copy HTML</button><button id="fs">Open ↗</button></div>
+<div class="main" id="main"><div class="eds" id="eds"></div><div class="gut" id="gut"></div><div class="res"><div class="vw"><iframe id="out" title="Result"></iframe></div><div class="con" id="con"><header><span>Console <span id="ec"></span></span><button id="cc" style="padding:0 8px">Clear</button></header></div></div></div>
+<script>
+const $=s=>document.querySelector(s),LANGS=['html','css','js'],ST={html:'',css:'',js:''};
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const KW=/\b(const|let|var|function|return|if|else|for|while|new|class|extends|import|from|export|default|async|await|try|catch|throw|this|true|false|null|undefined|of|in|typeof|switch|case|break|continue)\b/g;
+const HL={
+ html:s=>esc(s).replace(/(&lt;!--[\s\S]*?--&gt;)|(&lt;\/?)([\w-]+)|("[^"\n]*"|'[^'\n]*')|(\s)([\w:@-]+)(?==)/g,(m,c,o,tg,st,sp,at)=>c?`<span class=c>${c}</span>`:o?`${o}<span class=t>${tg}</span>`:st?`<span class=s>${st}</span>`:`${sp}<span class=a>${at}</span>`),
+ css:s=>esc(s).replace(/(\/\*[\s\S]*?\*\/)|("[^"\n]*"|'[^'\n]*')|(#[0-9a-fA-F]{3,8}\b|\b\d+(?:\.\d+)?(?:px|rem|em|%|s|ms|vh|vw|deg)?\b)|(--[\w-]+|[\w-]+(?=\s*:))/g,(m,c,st,n,p)=>c?`<span class=c>${c}</span>`:st?`<span class=s>${st}</span>`:n?`<span class=n>${n}</span>`:`<span class=p>${p}</span>`),
+ js:s=>esc(s).replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(`[^`]*`|"[^"\n]*"|'[^'\n]*')|(\b\d+(?:\.\d+)?\b)|(\b(?:const|let|var|function|return|if|else|for|while|new|class|extends|import|from|export|default|async|await|try|catch|throw|this|true|false|null|undefined|of|in|typeof|switch|case|break|continue)\b)/g,(m,c,st,n,k)=>c?`<span class=c>${c}</span>`:st?`<span class=s>${st}</span>`:n?`<span class=n>${n}</span>`:`<span class=k>${k}</span>`)};
+const TPL={
+blank:{n:'Blank',lib:true,html:'<h1>Hello</h1>',css:'body{font-family:sans-serif;padding:2rem}',js:'console.log("ready")'},
+hero:{n:'Kivora hero + cards',lib:true,html:`<header class="kv-nav"><div class="kv-container"><span class="kv-logo">Kivora</span><nav><a href="#a">Features</a><a href="#b">Pricing</a></nav><button class="kv-btn kv-btn-sm">Sign up</button></div></header>
+<section class="kv-hero kv-orbs"><div class="kv-container kv-stack"><span class="kv-eyebrow">New</span><h1>Ship faster with <span class="kv-gradtext">one platform</span></h1><p>Edit the HTML, CSS and JS on the left. The result updates live.</p><a class="kv-btn kv-btn-lg">Get started</a></div></section>
+<section class="kv-section" id="a"><div class="kv-container kv-grid kv-grid-3"><div class="kv-card kv-card-hover c-yellow"><span class="kv-ring">1</span><h3>Plan</h3><p class="kv-muted">Scope the work.</p></div><div class="kv-card kv-card-hover c-orange"><span class="kv-ring">2</span><h3>Build</h3><p class="kv-muted">Make it real.</p></div><div class="kv-card kv-card-hover c-mint"><span class="kv-ring">3</span><h3>Launch</h3><p class="kv-muted">Ship it.</p></div></div></section>`,css:`/* add your own styles */\n.kv-hero h1{max-width:16ch}`,js:`KV.toast('Hello from the editor','mint');`},
+charts:{n:'Dashboard: stats + charts',lib:true,html:`<main class="kv-container kv-stack" style="padding:32px 24px"><h2>Dashboard</h2>
+<div class="kv-grid kv-grid-4"><div class="kv-card kv-stat c-yellow"><b data-count="12840">0</b>Visitors</div><div class="kv-card kv-stat c-orange"><b data-count="87" data-suffix="%">0</b>Retention</div><div class="kv-card kv-stat c-blue"><b data-count="342" data-prefix="$" data-suffix="K">0</b>Revenue</div><div class="kv-card kv-stat c-mint"><b data-count="99" data-suffix="%">0</b>Uptime</div></div>
+<div class="kv-grid kv-grid-3"><div class="kv-card"><div data-chart="bar" data-values="12,18,26,34" data-labels="Q1,Q2,Q3,Q4"></div></div><div class="kv-card"><div data-chart="line" data-values="4,9,7,15,21" data-labels="Jan,Feb,Mar,Apr,May"></div></div><div class="kv-card"><div data-chart="donut" data-values="40,25,20,15"></div></div></div></main>`,css:'',js:''},
+motion:{n:'Animated graphics',lib:true,html:`<section class="kv-orbs kv-dark" style="min-height:100vh;display:grid;place-items:center;text-align:center"><div class="kv-stack"><h1 class="kv-gradtext">Motion</h1><p class="kv-type">Pure CSS animation with Kivora UI.</p><div class="kv-row" style="justify-content:center"><span class="kv-ring c-orange kv-pulse">●</span><span class="kv-ring c-cyan kv-spin">◐</span><div class="kv-wave"><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div></section>`,css:'',js:''},
+ui:{n:'JS: build with UI classes',lib:true,html:'<div id="app"></div>',css:'',js:`const { Navbar, Hero, Section, Grid, Card, Pricing, Footer } = UI.reg;
+new UI.Component({},
+  new Navbar({ brand: 'Kivora', links: [{ label: 'Features', href: '#f' }, { label: 'Pricing', href: '#p' }], cta: { label: 'Try it', href: '#p' } }),
+  new Hero({ eyebrow: 'Object-oriented', title: 'Pages from classes', text: 'Resize the preview to see the responsive navbar.' }),
+  new Section({ id: 'f', title: 'Features', center: true },
+    new Grid({ cols: 3 }, ['Compose', 'Reuse', 'Update'].map((t, i) => new Card({ title: t, text: 'Built in JavaScript.', ring: i + 1, color: ['yellow', 'orange', 'mint'][i] })))),
+  new Section({ id: 'p', title: 'Pricing', dark: true }, new Pricing({ plans: [{ name: 'Free', price: '$0', note: 'Hobby' }, { name: 'Pro', price: '$29', note: 'Teams', featured: true }, { name: 'Scale', price: '$99', note: 'Enterprise' }] })),
+  new Footer({ text: '© Kivora' })
+).mount('#app');`},
+tabs:{n:'Tabs + accordion + modal',lib:true,html:`<main class="kv-container kv-stack" style="padding:32px 24px"><div data-kv-tabs><div class="kv-tablist" role="tablist"><button class="kv-tab" role="tab">One</button><button class="kv-tab" role="tab">Two</button></div><div class="kv-tabpanel" role="tabpanel">First panel</div><div class="kv-tabpanel" role="tabpanel">Second panel</div></div>
+<details class="kv-acc" open><summary>Question one</summary><p>Answer one.</p></details><details class="kv-acc"><summary>Question two</summary><p>Answer two.</p></details>
+<button class="kv-btn" data-kv-open="m">Open modal</button><dialog id="m" class="kv-modal"><h3>Hello</h3><p>A native dialog.</p><button class="kv-btn kv-btn-sm" data-kv-close>Close</button></dialog></main>`,css:'',js:''},
+todo:{n:'Vanilla JS: todo app',lib:false,html:`<main><h1>Todos</h1><form id="f"><input id="t" placeholder="Add a task" autocomplete="off"><button>Add</button></form><ul id="l"></ul></main>`,css:`body{font-family:system-ui,sans-serif;background:#f4f5f9;color:#2B2E42;display:grid;place-items:start center;padding:40px}main{width:min(420px,100%);background:#fff;padding:24px;border-radius:16px;box-shadow:0 8px 30px rgba(43,46,66,.12)}\nform{display:flex;gap:8px}input{flex:1;padding:10px;border:2px solid #e7e6e6;border-radius:10px}button{background:#F4CE2F;border:0;border-radius:10px;padding:10px 16px;cursor:pointer}\nli{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;cursor:pointer}li.done span{text-decoration:line-through;opacity:.5}`,js:`const l=document.getElementById('l'),t=document.getElementById('t');\ndocument.getElementById('f').onsubmit=e=>{e.preventDefault();if(!t.value.trim())return;const li=document.createElement('li');li.innerHTML='<span></span><b>×</b>';li.firstChild.textContent=t.value;li.onclick=ev=>ev.target.tagName==='B'?li.remove():li.classList.toggle('done');l.append(li);console.log('added',t.value);t.value=''};`},
+canvas:{n:'Canvas particles',lib:false,html:'<canvas id="c"></canvas>',css:'html,body{margin:0;background:#2B2E42;overflow:hidden}canvas{display:block;width:100vw;height:100vh}',js:`const c=document.getElementById('c'),x=c.getContext('2d');let W,H;const col=['#F4CE2F','#F58020','#D23958','#0479CE','#25C29C'];\nconst rs=()=>{W=c.width=innerWidth;H=c.height=innerHeight};rs();addEventListener('resize',rs);\nconst P=[...Array(70)].map((_,i)=>({x:Math.random()*W,y:Math.random()*H,vx:Math.random()-.5,vy:Math.random()-.5,r:3+Math.random()*5,c:col[i%5]}));\n(function f(){x.clearRect(0,0,W,H);P.forEach(p=>{p.x=(p.x+p.vx+W)%W;p.y=(p.y+p.vy+H)%H;x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.strokeStyle=p.c;x.lineWidth=2;x.stroke()});requestAnimationFrame(f)})();\nconsole.log('particles running');`}};
+/* editors */
+const eds=$('#eds'),TA={},PRE={};
+LANGS.forEach(l=>{const box=document.createElement('div');box.className='box';const pre=document.createElement('pre');pre.innerHTML='<code></code>';const ta=document.createElement('textarea');ta.spellcheck=false;ta.setAttribute('aria-label',l.toUpperCase()+' code');box.append(pre,ta);
+ const w=document.createElement('div');w.className='ed';w.innerHTML=`<b>${l.toUpperCase()}</b>`;w.append(box);eds.append(w);TA[l]=ta;PRE[l]=pre.firstChild;
+ ta.addEventListener('input',()=>{paint(l);sched()});ta.addEventListener('scroll',()=>{pre.scrollTop=ta.scrollTop;pre.scrollLeft=ta.scrollLeft});
+ ta.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();ins(ta,'  ')}else if(e.key==='Enter'&&!(e.ctrlKey||e.metaKey)){const s=ta.selectionStart,line=ta.value.slice(0,s).split('\n').pop(),ind=line.match(/^\s*/)[0]+(/[{(\[]$/.test(line.trim())?'  ':'');e.preventDefault();ins(ta,'\n'+ind)}else if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();run()}})});
+function ins(ta,t){ta.focus();if(!document.execCommand('insertText',false,t)){const s=ta.selectionStart;ta.setRangeText(t,s,ta.selectionEnd,'end');ta.dispatchEvent(new Event('input'))}}
+function paint(l){PRE[l].innerHTML=HL[l](TA[l].value)+'\n'}
+function setCode(o){LANGS.forEach(l=>{TA[l].value=o[l];paint(l)});$('#lib').checked=o.lib}
+/* run */
+const cap=function(){['log','info','warn','error'].forEach(k=>{const o=console[k];console[k]=(...a)=>{parent.postMessage({kvc:k,a:a.map(x=>{try{return typeof x==='object'?JSON.stringify(x):String(x)}catch(e){return String(x)}})},'*');o.apply(console,a)}});addEventListener('error',e=>parent.postMessage({kvc:'error',a:[e.message+' (line '+e.lineno+')']},'*'));addEventListener('unhandledrejection',e=>parent.postMessage({kvc:'error',a:['Unhandled: '+e.reason]},'*'))};
+function doc(){const base=new URL('./',location.href).href,lib=$('#lib').checked;
+ return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${lib?`<link rel="stylesheet" href="${base}css/kivora.css">`:''}<script>(${cap})()<\/script><style>${TA.css.value}</style></head><body>${TA.html.value}${lib?`<script src="${base}js/kivora.js"><\/script>`:''}<script>${TA.js.value}<\/script></body></html>`}
+let tm,errs=0;const con=$('#con');
+function log(k,a){const d=document.createElement('div');d.className=k;d.textContent=a.join(' ');con.append(d);if(k==='error'){errs++;$('#ec').textContent='('+errs+' errors)'}con.scrollTop=con.scrollHeight}
+function clearCon(){[...con.children].slice(1).forEach(x=>x.remove());errs=0;$('#ec').textContent=''}
+function run(){clearCon();$('#out').srcdoc=doc()}
+function sched(){clearTimeout(tm);if($('#auto').checked)tm=setTimeout(run,500)}
+addEventListener('message',e=>{if(e.source===$('#out').contentWindow&&e.data&&e.data.kvc)log(e.data.kvc,e.data.a)});
+/* ui */
+const sel=$('#tpl');Object.entries(TPL).forEach(([k,v])=>sel.append(new Option(v.n,k)));
+sel.onchange=()=>{setCode(TPL[sel.value]);run()};
+$('#run').onclick=run;$('#cc').onclick=clearCon;$('#pw').onchange=e=>$('#out').style.width=e.target.value;
+$('#lay').onclick=()=>{$('#main').classList.toggle('top');$('#main').style.removeProperty('--sz')};
+$('#theme').onclick=()=>{document.body.classList.toggle('light');try{localStorage.setItem('kv-ed-theme',document.body.classList.contains('light')?'l':'d')}catch(e){}};
+const file=()=>{const lib=$('#lib').checked;let h=doc(lib);return lib?h.replace('<script>('+cap+')()<' + '/script>',''):h};
+$('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([file()],{type:'text/html'}));a.download='page.html';document.body.append(a);a.click();a.remove()};
+$('#cp').onclick=()=>navigator.clipboard.writeText(file()).then(()=>log('info',['HTML copied to clipboard']));
+$('#fs').onclick=()=>window.open(URL.createObjectURL(new Blob([file()],{type:'text/html'})),'_blank');
+function save(){try{localStorage.setItem('kv-ed',JSON.stringify({html:TA.html.value,css:TA.css.value,js:TA.js.value,lib:$('#lib').checked,tpl:sel.value}))}catch(e){}log('info',['Saved'])}
+$('#save').onclick=save;$('#lib').onchange=run;
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();save()}});
+const g=$('#gut');g.addEventListener('pointerdown',e=>{g.setPointerCapture(e.pointerId);const m=$('#main'),top=m.classList.contains('top'),r=m.getBoundingClientRect(),mv=ev=>{const p=top?(ev.clientY-r.top)/r.height:(ev.clientX-r.left)/r.width;m.style.setProperty('--sz',Math.min(80,Math.max(20,p*100))+'%')};g.onpointermove=mv;g.onpointerup=()=>{g.onpointermove=null}});
+try{if(localStorage.getItem('kv-ed-theme')==='l')document.body.classList.add('light')}catch(e){}
+let st=null;try{st=JSON.parse(localStorage.getItem('kv-ed'))}catch(e){}
+if(st&&st.html!=null){sel.value=TPL[st.tpl]?st.tpl:'hero';setCode(st)}else{sel.value='hero';setCode(TPL.hero)}
+run();
+</script></body></html>json:{n:'JSON: page from a spec',lib:true,html:'<div id="app"></div>',css:'',js:`UI.create({type:'Page',props:{},children:[
+ {type:'Navbar',props:{brand:'Kivora',links:[{label:'Features',href:'#f'}],cta:{label:'Get started',href:'#'}}},
+ {type:'Hero',props:{eyebrow:'JSON-driven',title:'A whole page from one object',text:'This page is a single JSON spec rendered by UI.create — the same format the builder exports.'}},
+ {type:'Section',props:{title:'Cards from JSON'},children:[{type:'Grid',props:{cols:3},children:[
+  {type:'Card',props:{title:'One',text:'First card.',ring:1,color:'yellow'}},
+  {type:'Card',props:{title:'Two',text:'Second card.',ring:2,color:'orange'}},
+  {type:'Card',props:{title:'Three',text:'Third card.',ring:3,color:'mint'}}]}]},
+ {type:'Footer',props:{text:'© Kivora'}}
+]}).mount('#app');`},
+

@@ -1,0 +1,3 @@
+# Kivora is a static site: no build command, publish the repo root.
+[build]
+  publish = "."
