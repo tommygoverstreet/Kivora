@@ -46,6 +46,15 @@ new UI.Component({},
   new Section({ id: 'p', title: 'Pricing', dark: true }, new Pricing({ plans: [{ name: 'Free', price: '$0', note: 'Hobby' }, { name: 'Pro', price: '$29', note: 'Teams', featured: true }, { name: 'Scale', price: '$99', note: 'Enterprise' }] })),
   new Footer({ text: '© Kivora' })
 ).mount('#app');`},
+json:{n:'JSON: page from a spec',lib:true,html:'<div id="app"></div>',css:'',js:`UI.create({type:'Page',props:{},children:[
+ {type:'Navbar',props:{brand:'Kivora',links:[{label:'Features',href:'#f'}],cta:{label:'Get started',href:'#'}}},
+ {type:'Hero',props:{eyebrow:'JSON-driven',title:'A whole page from one object',text:'This page is a single JSON spec rendered by UI.create — the same format the builder exports.'}},
+ {type:'Section',props:{title:'Cards from JSON'},children:[{type:'Grid',props:{cols:3},children:[
+  {type:'Card',props:{title:'One',text:'First card.',ring:1,color:'yellow'}},
+  {type:'Card',props:{title:'Two',text:'Second card.',ring:2,color:'orange'}},
+  {type:'Card',props:{title:'Three',text:'Third card.',ring:3,color:'mint'}}]}]},
+ {type:'Footer',props:{text:'© Kivora'}}
+]}).mount('#app');`},
 tabs:{n:'Tabs + accordion + modal',lib:true,html:`<main class="kv-container kv-stack" style="padding:32px 24px"><div data-kv-tabs><div class="kv-tablist" role="tablist"><button class="kv-tab" role="tab">One</button><button class="kv-tab" role="tab">Two</button></div><div class="kv-tabpanel" role="tabpanel">First panel</div><div class="kv-tabpanel" role="tabpanel">Second panel</div></div>
 <details class="kv-acc" open><summary>Question one</summary><p>Answer one.</p></details><details class="kv-acc"><summary>Question two</summary><p>Answer two.</p></details>
 <button class="kv-btn" data-kv-open="m">Open modal</button><dialog id="m" class="kv-modal"><h3>Hello</h3><p>A native dialog.</p><button class="kv-btn kv-btn-sm" data-kv-close>Close</button></dialog></main>`,css:'',js:''},
@@ -88,13 +97,4 @@ try{if(localStorage.getItem('kv-ed-theme')==='l')document.body.classList.add('li
 let st=null;try{st=JSON.parse(localStorage.getItem('kv-ed'))}catch(e){}
 if(st&&st.html!=null){sel.value=TPL[st.tpl]?st.tpl:'hero';setCode(st)}else{sel.value='hero';setCode(TPL.hero)}
 run();
-</script></body></html>json:{n:'JSON: page from a spec',lib:true,html:'<div id="app"></div>',css:'',js:`UI.create({type:'Page',props:{},children:[
- {type:'Navbar',props:{brand:'Kivora',links:[{label:'Features',href:'#f'}],cta:{label:'Get started',href:'#'}}},
- {type:'Hero',props:{eyebrow:'JSON-driven',title:'A whole page from one object',text:'This page is a single JSON spec rendered by UI.create — the same format the builder exports.'}},
- {type:'Section',props:{title:'Cards from JSON'},children:[{type:'Grid',props:{cols:3},children:[
-  {type:'Card',props:{title:'One',text:'First card.',ring:1,color:'yellow'}},
-  {type:'Card',props:{title:'Two',text:'Second card.',ring:2,color:'orange'}},
-  {type:'Card',props:{title:'Three',text:'Third card.',ring:3,color:'mint'}}]}]},
- {type:'Footer',props:{text:'© Kivora'}}
-]}).mount('#app');`},
-
+</script></body></html>
