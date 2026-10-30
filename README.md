@@ -109,6 +109,21 @@ node scripts/sync-data.mjs
   **JSON: page from a spec** — the `UI.create` format, rendered live.
 - The **Kivora UI** checkbox includes the library in the preview. Download
   and Copy HTML export a clean file (the console-capture helper is stripped).
+- **Wrap** and **Lines** toggles (saved with your work): soft word-wrap for
+  long lines, and a line-number gutter that stays in sync while scrolling
+  (wrap-aware, so numbers track wrapped rows too).
+- **Auto-close**: typing `>` after an opening HTML tag inserts its closing
+  tag (void elements and already-closed tags are left alone); brackets,
+  quotes, and backticks close in pairs, typing the closer skips over it,
+  and backspace deletes an empty pair together.
+- **Text prediction**: as you type, a dropdown suggests HTML tags, Kivora
+  classes, JS keywords and `UI`/`KV` names, or CSS properties, depending on
+  the pane and context (tags after `<`, classes inside `class="..."`).
+  Arrow keys move, Tab/Enter accepts, Esc dismisses.
+- **Format** button (Ctrl/Cmd+Shift+F) tidies the active pane: HTML by tag
+  nesting (script/style content kept verbatim), CSS by rule and declaration,
+  JS by re-indenting to brace depth (template literals and strings are
+  never re-indented, so their content stays exact).
 
 ## Theming
 
