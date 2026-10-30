@@ -83,3 +83,10 @@ const UI={h,Component,reg:{Btn,Badge,Alert,Navbar,Hero,Section,Grid,Card,Stat,Ch
  register(o){Object.assign(this.reg,o);return this},
  create(s){if(typeof s==='string')return s;const C=this.reg[s.type];if(!C)throw new Error('Unknown component: '+s.type);return new C(s.props,...(s.children||[]).map(c=>this.create(c)))}};
 return UI})();
+
+// Expose the library on window so other windows can reach it (e.g. the
+// builder's preview iframe): top-level const does not create a window
+// property, so frame.contentWindow.UI would otherwise be undefined and the
+// builder preview would stay blank.
+window.UI = UI;
+window.KV = KV;
