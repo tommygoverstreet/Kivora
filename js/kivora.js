@@ -9,11 +9,11 @@ function count(el){const to=+el.dataset.count,suf=el.dataset.suffix||'',pre=el.d
 function init(){try{const t=localStorage.getItem('kv-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
  $('.kv-nav .kv-nav-toggle').forEach(b=>b.onclick=()=>{const n=b.closest('.kv-nav');b.setAttribute('aria-expanded',n.classList.toggle('open'))});$('[data-kv-theme]').forEach(b=>b.onclick=()=>theme());
  $('[data-kv-tabs]').forEach(tabs);
- $('[data-kv-open]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.rcOpen).showModal());
+ $('[data-kv-open]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.kvOpen).showModal());
  $('[data-kv-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
  $('dialog.kv-modal').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
- $('[data-kv-toast]').forEach(b=>b.onclick=()=>toast(b.dataset.rcToast,b.dataset.rcColor));
- $('[data-kv-copy]').forEach(b=>b.onclick=()=>navigator.clipboard.writeText(b.dataset.rcCopy).then(()=>toast('Copied')));
+ $('[data-kv-toast]').forEach(b=>b.onclick=()=>toast(b.dataset.kvToast,b.dataset.kvColor));
+ $('[data-kv-copy]').forEach(b=>b.onclick=()=>navigator.clipboard.writeText(b.dataset.kvCopy).then(()=>toast('Copied')));
  $('details.kv-acc[data-group]').forEach(d=>d.ontoggle=()=>{if(d.open)$(`details[data-group="${d.dataset.group}"]`).forEach(o=>o!==d&&(o.open=false))});
  const io='IntersectionObserver'in window?new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;e.target.classList.add('in');$('[data-count]',e.target).concat(e.target.dataset.count?[e.target]:[]).forEach(count);$('.kv-progress>i',e.target).forEach(i=>i.style.width=i.dataset.v);io.unobserve(e.target)}),{threshold:.2}):null;
  $('.kv-reveal').forEach(el=>io?io.observe(el):el.classList.add('in'));
@@ -21,7 +21,7 @@ function init(){try{const t=localStorage.getItem('kv-theme');if(t)document.docum
  $('.kv-progress>i').forEach(i=>{i.dataset.v=i.style.getPropertyValue('--v')||'50%'});
  const deck=$('.kv-deck')[0];if(deck)document.addEventListener('keydown',e=>{const k={ArrowDown:1,PageDown:1,' ':1,ArrowUp:-1,PageUp:-1}[e.key];if(k){e.preventDefault();deck.scrollBy({top:k*deck.clientHeight,behavior:'smooth'})}})}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
-const apps={};const mount=()=>$('[data-kv-app]').forEach(el=>apps[el.dataset.rcApp]&&apps[el.dataset.rcApp](el));
+const apps={};const mount=()=>$('[data-kv-app]').forEach(el=>apps[el.dataset.kvApp]&&apps[el.dataset.kvApp](el));
 return{theme,toast,tabs,count,init,apps,mount}})();
 /* ===== 1.1 additions: carousel, dropdown, charts, typewriter ===== */
 (()=>{const $=(s,r=document)=>[...r.querySelectorAll(s)],N='http://www.w3.org/2000/svg',COL=['--yellow','--orange','--red','--blue','--mint','--cyan'];
@@ -69,7 +69,7 @@ class Card extends Component{build(){const{title,text,ring,color}=this.p;return 
 class Stat extends Component{build(){const{value,label,color,prefix,suffix}=this.p;return h('div',{class:'kv-card kv-stat'+col(color)},h('b',{data:{count:value,prefix,suffix}},'0'),label)}}
 class Chart extends Component{build(){const{type='bar',values=[],labels=[],title}=this.p;return h('div',{data:{chart:type,values:values.join(','),labels:labels.join(','),title}})}}
 class Table extends Component{build(){const{head=[],rows=[]}=this.p;return h('div',{style:{overflowX:'auto'}},h('table',{class:'kv-table'},h('tr',{},head.map(c=>h('th',{},c))),rows.map(r=>h('tr',{},r.map(c=>h('td',{},c))))))}}
-class Tabs extends Component{build(){const t=this.p.tabs||[];return h('div',{data:{rcTabs:''}},h('div',{class:'kv-tablist',role:'tablist'},t.map(x=>h('button',{class:'kv-tab',role:'tab'},x.label))),t.map(x=>h('div',{class:'kv-tabpanel',role:'tabpanel'},x.content)))}}
+class Tabs extends Component{build(){const t=this.p.tabs||[];return h('div',{data:{kvTabs:''}},h('div',{class:'kv-tablist',role:'tablist'},t.map(x=>h('button',{class:'kv-tab',role:'tab'},x.label))),t.map(x=>h('div',{class:'kv-tabpanel',role:'tabpanel'},x.content)))}}
 class Accordion extends Component{build(){const g='g'+Math.random().toString(36).slice(2,6);return h('div',{},(this.p.items||[]).map((x,i)=>h('details',{class:'kv-acc',open:i===0,data:{group:g}},h('summary',{},x.title),h('p',{},x.content))))}}
 class Modal extends Component{build(){const d=h('dialog',{class:'kv-modal'},h('h3',{},this.p.title),h('div',{class:'kv-stack'},this.kids),h('p',{},new Btn({label:'Close',size:'sm',onClick:()=>d.close()})));d.addEventListener('click',e=>e.target===d&&d.close());return d}
  open(){this.el.showModal();return this}close(){this.el.close();return this}}
