@@ -1,0 +1,112 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Relecloud Visual Builder</title><link rel="stylesheet" href="style.css">
+<style>
+html,body{height:100%}body{display:grid;grid-template-rows:auto 1fr;overflow:hidden}
+.tb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px 16px;background:var(--navy);color:#fff}.tb a{color:#d6d8e6;text-decoration:none;font-size:.85rem}.tb .rc-btn{padding:6px 14px;font-size:.85rem}.tb .sp{flex:1}.tb .rc-btn-outline{color:#fff}.tb .on{background:var(--yellow);color:var(--navy)}
+.tb select{padding:6px 10px;border-radius:10px;border:0;font:inherit;font-size:.85rem}
+.ws{display:grid;grid-template-columns:230px 1fr 330px;min-height:0}.pal,.insp{overflow:auto;padding:16px;background:var(--surface)}
+.pal h4,.insp h4{margin:0 0 8px;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.pal .it{display:flex;gap:10px;align-items:center;width:100%;margin-bottom:8px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);font:inherit;cursor:grab;text-align:left}.pal .it:hover{border-color:var(--yellow)}.pal .it b{width:28px;text-align:center;color:var(--orange)}
+.stage{position:relative;background:#c9ccd8;display:flex;justify-content:center;padding:12px;min-height:0;min-width:0}.frame{background:#fff;border:0;height:100%;width:100%;max-width:100%;transition:width .25s;box-shadow:var(--sh)}
+.drop{position:absolute;inset:0;display:none;z-index:5;background:rgba(244,206,47,.15);border:3px dashed var(--yellow)}.dragging .drop{display:block}
+.insp .rc-field{margin-bottom:12px}.insp textarea{min-height:90px;font:12px/1.4 ui-monospace,Consolas,monospace}.insp .bad{border-color:var(--red)}.insp .acts{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 16px}.insp .acts .rc-btn{padding:4px 12px;font-size:.8rem}
+@media(max-width:1000px){body{overflow:auto;display:block}.ws{grid-template-columns:1fr}.stage{height:70vh}}
+</style></head><body>
+<div class="tb"><strong>Visual Builder</strong><a href="index.html">Home</a><a href="editor.html">Code Editor</a><span class="sp"></span>
+<select id="preset" aria-label="Start from template"></select>
+<button class="rc-btn rc-btn-outline" id="undo">Undo</button><button class="rc-btn rc-btn-outline" id="redo">Redo</button>
+<span id="dev"><button class="rc-btn rc-btn-outline on" data-w="100%">Desktop</button> <button class="rc-btn rc-btn-outline" data-w="768px">Tablet</button> <button class="rc-btn rc-btn-outline" data-w="390px">Mobile</button></span>
+<button class="rc-btn" id="export">Download HTML</button><button class="rc-btn rc-btn-outline" id="copy">Copy HTML</button><button class="rc-btn rc-btn-outline" id="json">Export JSON</button><label class="rc-btn rc-btn-outline">Import<input id="imp" type="file" accept=".json" hidden></label><button class="rc-btn rc-btn-outline" id="clear">Clear</button></div>
+<div class="ws"><aside class="pal" id="pal"><h4>Components</h4></aside>
+<div class="stage" id="stage"><iframe class="frame" id="frame" title="Page preview"></iframe><div class="drop" id="drop"></div></div>
+<aside class="insp" id="insp"></aside></div>
+<script src="script.js"></script>
+<script>
+const $=s=>document.querySelector(s),h=UI.h,clone=o=>JSON.parse(JSON.stringify(o));
+const COLORS=['yellow','orange','red','blue','cyan','mint'];
+const T=['text'],TA=['textarea'];
+/* Catalog: props, editable fields, and make() — make() is self-contained so it can be exported as source. */
+const C={
+navbar:{label:'Navbar',icon:'☰',props:{brand:'Relecloud',links:[{label:'Features',href:'#features'},{label:'Pricing',href:'#pricing'}],ctaLabel:'Get started',ctaHref:'#cta'},fields:[['brand','Brand'],['links','Links','json'],['ctaLabel','Button label'],['ctaHref','Button link']],
+ make:p=>new UI.reg.Navbar({brand:p.brand,links:p.links,cta:p.ctaLabel?{label:p.ctaLabel,href:p.ctaHref}:null})},
+hero:{label:'Hero',icon:'★',props:{eyebrow:'Cloud platform',title:'Build something remarkable',text:'One platform to deploy, monitor and scale.',btn1:'Start free',btn1Href:'#cta',btn2:'Learn more',btn2Href:'#features'},fields:[['eyebrow','Eyebrow'],['title','Title'],['text','Text','textarea'],['btn1','Button 1'],['btn1Href','Button 1 link'],['btn2','Button 2'],['btn2Href','Button 2 link']],
+ make:p=>new UI.reg.Hero({eyebrow:p.eyebrow,title:p.title,text:p.text,actions:[p.btn1&&{label:p.btn1,href:p.btn1Href},p.btn2&&{label:p.btn2,variant:'outline',href:p.btn2Href}].filter(Boolean)})},
+features:{label:'Feature cards',icon:'▦',props:{id:'features',title:'Features',items:[{title:'Deploy',text:'Ship in minutes.',color:'yellow'},{title:'Monitor',text:'See everything.',color:'orange'},{title:'Scale',text:'Grow without limits.',color:'mint'}]},fields:[['id','Anchor id'],['title','Title'],['items','Cards','json']],
+ make:p=>new UI.reg.Section({id:p.id,title:p.title,center:true},new UI.reg.Grid({cols:3},p.items.map((x,i)=>new UI.reg.Card({title:x.title,text:x.text,ring:i+1,color:x.color}))))},
+stats:{label:'Stat counters',icon:'#',props:{title:'',items:[{value:87,suffix:'%',label:'Satisfaction',color:'yellow'},{value:12,suffix:'×',label:'Faster',color:'orange'},{value:342,prefix:'$',suffix:'K',label:'Revenue',color:'blue'},{value:99,suffix:'%',label:'Uptime',color:'mint'}]},fields:[['title','Title'],['items','Stats','json']],
+ make:p=>new UI.reg.Section({title:p.title},new UI.reg.Grid({cols:4},p.items.map(x=>new UI.reg.Stat(x))))},
+chart:{label:'Chart',icon:'▮',props:{title:'Revenue by quarter',type:'bar',values:'12,18,26,34',labels:'Q1,Q2,Q3,Q4'},fields:[['title','Title'],['type','Type','select',['bar','line','donut']],['values','Values (comma)'],['labels','Labels (comma)']],
+ make:p=>new UI.reg.Section({title:p.title},new UI.reg.Chart({type:p.type,values:String(p.values).split(',').map(Number),labels:String(p.labels).split(',')}))},
+pricing:{label:'Pricing',icon:'$',props:{id:'pricing',title:'Pricing',dark:true,plans:[{name:'Starter',price:'$0',note:'Small projects'},{name:'Pro',price:'$29',note:'Teams',featured:true},{name:'Scale',price:'$99',note:'Enterprise'}]},fields:[['id','Anchor id'],['title','Title'],['dark','Dark background','bool'],['plans','Plans','json']],
+ make:p=>new UI.reg.Section({id:p.id,title:p.title,dark:p.dark,center:true},new UI.reg.Pricing({plans:p.plans}))},
+timeline:{label:'Timeline',icon:'⋯',props:{title:'Roadmap',steps:[{title:'Plan',text:'Scope it.',date:'Jan',color:'yellow'},{title:'Build',text:'Make it.',date:'Feb',color:'orange'},{title:'Launch',text:'Ship it.',date:'Mar',color:'mint'}]},fields:[['title','Title'],['steps','Steps','json']],
+ make:p=>new UI.reg.Section({title:p.title},new UI.reg.Timeline({steps:p.steps}))},
+faq:{label:'FAQ accordion',icon:'?',props:{title:'Questions',items:[{title:'Is it free?',content:'Yes, the Starter plan is free.'},{title:'Can I cancel?',content:'Anytime.'}]},fields:[['title','Title'],['items','Items','json']],
+ make:p=>new UI.reg.Section({title:p.title},new UI.reg.Accordion({items:p.items}))},
+tabs:{label:'Tabs',icon:'▭',props:{title:'Details',tabs:[{label:'Overview',content:'Overview content.'},{label:'Specs',content:'Spec content.'}]},fields:[['title','Title'],['tabs','Tabs','json']],
+ make:p=>new UI.reg.Section({title:p.title},new UI.reg.Tabs({tabs:p.tabs}))},
+table:{label:'Table',icon:'☷',props:{title:'Status',head:['Workstream','Owner','Status'],rows:[['Discovery','Team A','Done'],['Build','Team B','Active']]},fields:[['title','Title'],['head','Header','json'],['rows','Rows','json']],
+ make:p=>new UI.reg.Section({title:p.title},new UI.reg.Table({head:p.head,rows:p.rows}))},
+text:{label:'Text block',icon:'¶',props:{id:'',title:'Heading',body:'Write your paragraph here.',center:false,dark:false},fields:[['id','Anchor id'],['title','Title'],['body','Body','textarea'],['center','Center','bool'],['dark','Dark background','bool']],
+ make:p=>new UI.reg.Section({id:p.id||null,title:p.title,center:p.center,dark:p.dark},p.body.split('\n').map(t=>UI.h('p',{class:p.center?'rc-center':''},t)))},
+cta:{label:'Call to action',icon:'➜',props:{id:'cta',title:'Ready to start?',text:'Create your account in minutes.',label:'Get started',href:'#',dark:true},fields:[['id','Anchor id'],['title','Title'],['text','Text'],['label','Button label'],['href','Button link'],['dark','Dark background','bool']],
+ make:p=>new UI.reg.Section({id:p.id,title:p.title,dark:p.dark,center:true},UI.h('p',{},p.text),new UI.reg.Btn({label:p.label,href:p.href,size:'lg'}))},
+carousel:{label:'Carousel',icon:'◫',props:{auto:4000,slides:['Slide one','Slide two','Slide three']},fields:[['auto','Auto-play ms','number'],['slides','Slides','json']],
+ make:p=>new UI.reg.Section({},new UI.reg.Carousel({auto:p.auto||null,slides:p.slides}))},
+alert:{label:'Alert',icon:'!',props:{color:'cyan',text:'Heads up: something worth knowing.'},fields:[['color','Color','select',COLORS],['text','Text']],
+ make:p=>new UI.reg.Section({},new UI.reg.Alert({color:p.color,text:p.text}))},
+footer:{label:'Footer',icon:'▁',props:{text:'© Relecloud'},fields:[['text','Text']],make:p=>new UI.reg.Footer({text:p.text})}};
+const P=(...t)=>t.map(x=>Array.isArray(x)?{type:x[0],props:x[1]}:{type:x});
+const PRESETS={blank:['Blank page',[]],saas:['SaaS landing',P('navbar','hero','features','stats','chart','pricing','faq','cta','footer')],
+ report:['Business report',P(['hero',{eyebrow:'Quarterly report',title:'Q4 Business Review',text:'Highlights and next steps.',btn1:'',btn2:''}],'stats','chart','table','timeline','footer')],
+ pricing:['Pricing page',P('navbar',['hero',{eyebrow:'Pricing',title:'Simple, transparent plans',text:'Pick a plan and upgrade anytime.',btn1:'',btn2:''}],'pricing','faq','cta','footer')]};
+let state=[],sel=null,hist=[],hi=-1,uid=0,tm,frame=$('#frame');
+const nid=()=>'n'+(++uid);
+const node=(t,p)=>({id:nid(),type:t,props:Object.assign(clone(C[t].props),p||{})});
+const load=a=>{state=a.map(x=>node(x.type,x.props));sel=null;commit(true)};
+function save(){try{localStorage.setItem('rc-builder',JSON.stringify(state.map(({type,props})=>({type,props}))))}catch(e){}}
+function commit(now){clearTimeout(tm);const go=()=>{const s=JSON.stringify(state.map(({type,props})=>({type,props})));if(hist[hi]!==s){hist=hist.slice(0,hi+1);hist.push(s);hi=hist.length-1}save()};now?go():tm=setTimeout(go,400);draw();insp()}
+function restore(i){if(i<0||i>=hist.length)return;hi=i;state=JSON.parse(hist[i]).map(x=>node(x.type,x.props));sel=null;save();draw();insp()}
+function draw(){const iw=frame.contentWindow;if(!iw||!iw.UI||!iw.RC)return;const d=iw.document,app=d.getElementById('app'),y=iw.scrollY;app.replaceChildren();
+ if(!state.length){const e=d.createElement('div');e.className='bd-empty';e.textContent='Click or drag a component to start';app.append(e)}
+ state.forEach(n=>{const w=d.createElement('div');w.className='bd-block'+(n.id===sel?' sel':'');w.dataset.id=n.id;w.dataset.type=n.type;
+  try{w.append(new Function('UI','return '+C[n.type].make.toString())(iw.UI)(n.props).render())}catch(e){w.textContent='Error: '+e.message}
+  w.addEventListener('click',e=>{e.preventDefault();select(n.id)});app.append(w)});
+ iw.RC.init();iw.RC.start();iw.scrollTo(0,y)}
+function select(i){sel=i;insp();[...frame.contentDocument.querySelectorAll('.bd-block')].forEach(b=>b.classList.toggle('sel',b.dataset.id===i))}
+function add(t,at){const n=node(t);const i=at==null?(sel?state.findIndex(x=>x.id===sel)+1:state.length):at;state.splice(i,0,n);sel=n.id;commit(true);
+ setTimeout(()=>{const b=frame.contentDocument.querySelector('.bd-block.sel');b&&b.scrollIntoView({block:'center'})},50)}
+const idx=()=>state.findIndex(x=>x.id===sel);
+function move(d){const i=idx(),j=i+d;if(i<0||j<0||j>=state.length)return;[state[i],state[j]]=[state[j],state[i]];commit(true)}
+function dup(){const i=idx();if(i<0)return;const n=node(state[i].type,clone(state[i].props));state.splice(i+1,0,n);sel=n.id;commit(true)}
+function del(){const i=idx();if(i<0)return;state.splice(i,1);sel=null;commit(true)}
+function insp(){const box=$('#insp'),n=state.find(x=>x.id===sel);box.replaceChildren();
+ if(!n){box.append(h('h4',{},'Properties'),h('p',{class:'rc-muted'},'Select a block in the preview to edit it. Click or drag components from the left to add them.'));return}
+ box.append(h('h4',{},'Editing'),h('h3',{},C[n.type].label),h('div',{class:'acts'},...[['↑ Up',()=>move(-1)],['↓ Down',()=>move(1)],['Duplicate',dup],['Delete',del]].map(([l,f])=>new UI.reg.Btn({label:l,size:'sm',variant:'outline',onClick:f}).render())));
+ C[n.type].fields.forEach(([k,label,type,opts])=>{const v=n.props[k],id='f_'+k;let inp;
+  const set=val=>{n.props[k]=val;commit()};
+  if(type==='textarea'||type==='json'){inp=h('textarea',{class:'rc-input',id,rows:type==='json'?8:4,spellcheck:'false'});inp.value=type==='json'?JSON.stringify(v,null,1):v??'';
+   inp.addEventListener('input',()=>{if(type==='json'){try{set(JSON.parse(inp.value));inp.classList.remove('bad')}catch(e){inp.classList.add('bad')}}else set(inp.value)})}
+  else if(type==='select'){inp=h('select',{class:'rc-input',id},opts.map(o=>h('option',{value:o},o)));inp.value=v;inp.addEventListener('change',()=>set(inp.value))}
+  else if(type==='bool'){inp=h('input',{type:'checkbox',class:'rc-switch',id});inp.checked=!!v;inp.addEventListener('change',()=>set(inp.checked))}
+  else{inp=h('input',{class:'rc-input',id,type:type==='number'?'number':'text'});inp.value=v??'';inp.addEventListener('input',()=>set(type==='number'?+inp.value:inp.value))}
+  box.append(h('div',{class:'rc-field'},h('label',{for:id},label),inp))})}
+/* export: self-contained page that rebuilds the layout with the same UI classes */
+function html(){const used=[...new Set(state.map(n=>n.type))];
+ return `<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My page</title><link rel="stylesheet" href="style.css"></head>\n<body><div id="app"></div>\n<script src="script.js"><\/script>\n<script>\nconst make={\n${used.map(t=>'  '+t+':'+C[t].make.toString()).join(',\n')}\n};\nconst spec=${JSON.stringify(state.map(({type,props})=>({type,props})),null,1)};\nspec.forEach(n=>make[n.type](n.props).mount('#app'));\n<\/script></body></html>\n`}
+const dl=(name,text,type)=>{const a=h('a',{href:URL.createObjectURL(new Blob([text],{type})),download:name});document.body.append(a);a.click();a.remove()};
+/* wiring */
+const pal=$('#pal');Object.entries(C).forEach(([t,c])=>{const b=h('button',{class:'it',draggable:'true',type:'button',data:{type:t}},h('b',{},c.icon),c.label);
+ b.addEventListener('click',()=>add(t));b.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',t);document.body.classList.add('dragging')});b.addEventListener('dragend',()=>document.body.classList.remove('dragging'));pal.append(b)});
+const dz=$('#drop');dz.addEventListener('dragover',e=>e.preventDefault());dz.addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('dragging');const t=e.dataTransfer.getData('text/plain');if(!C[t])return;
+ const y=e.clientY-frame.getBoundingClientRect().top,bl=[...frame.contentDocument.querySelectorAll('.bd-block')];let i=bl.findIndex(b=>{const r=b.getBoundingClientRect();return y<r.top+r.height/2});add(t,i<0?state.length:i)});
+const ps=$('#preset');Object.entries(PRESETS).forEach(([k,[l]])=>ps.append(h('option',{value:k},k==='blank'?'Start from…':l)));ps.addEventListener('change',()=>{if(ps.value&&(!state.length||confirm('Replace the current page?')))load(PRESETS[ps.value][1]);ps.value='blank'});
+$('#undo').onclick=()=>restore(hi-1);$('#redo').onclick=()=>restore(hi+1);
+$('#clear').onclick=()=>{if(!state.length||confirm('Clear the page?')){state=[];sel=null;commit(true)}};
+$('#export').onclick=()=>dl('page.html',html(),'text/html');$('#copy').onclick=()=>navigator.clipboard.writeText(html()).then(()=>RC.toast('HTML copied','mint'));
+$('#json').onclick=()=>dl('page.json',JSON.stringify(state.map(({type,props})=>({type,props})),null,1),'application/json');
+$('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{load(JSON.parse(t).filter(x=>C[x.type]))}catch(err){RC.toast('Invalid JSON file','red')}})};
+$('#dev').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;frame.style.width=b.dataset.w;[...$('#dev').children].forEach(x=>x.classList.toggle('on',x===b))});
+document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if((e.key==='Delete'||e.key==='Backspace')&&sel){e.preventDefault();del()}if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();restore(hi-1)}if((e.ctrlKey||e.metaKey)&&e.key==='y'){e.preventDefault();restore(hi+1)}});
+const base=new URL('./',location.href).href;
+frame.addEventListener('load',()=>{let s=null;try{s=JSON.parse(localStorage.getItem('rc-builder'))}catch(e){}state=(s&&s.length?s:PRESETS.saas[1]).filter(x=>C[x.type]).map(x=>node(x.type,x.props));commit(true)},{once:true});
+frame.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="${base}style.css"><style>.bd-block{position:relative;cursor:pointer}.bd-block>*{pointer-events:none}.bd-block:hover{outline:2px dashed #009AD5;outline-offset:-2px}.bd-block.sel{outline:3px solid #F4CE2F;outline-offset:-3px}.bd-empty{padding:120px 24px;text-align:center;color:#888;font:1.2rem sans-serif}.rc-nav{position:relative}</style></head><body><div id="app"></div><script src="${base}script.js"><\/script></body></html>`;
+</script></body></html>
