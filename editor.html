@@ -94,11 +94,11 @@ function curWord(ta){
 }
 /* ---- formatters (quick format: structure + indent, code stays valid) ---- */
 function formatHTML(s){
-  const chunks=s.match(/<(script|style)(\s[^>]*)?>[\s\S]*?<\/\1\s*>|<!--[\s\S]*?-->|<!doctype(?:\"[^\"]*\"|'[^']*'|[^>])*>|<(?![A-Za-z\/!])|<\/?[A-Za-z](?:\"[^\"]*\"|'[^']*'|[^<>\"'])*>|[^<]+/gi)||[];
+  const chunks=s.match(/<(script|style)(\s[^>]*)?>[\s\S]*?<\/\1\s*>|<\!--[\s\S]*?-->|<!doctype(?:\"[^\"]*\"|'[^']*'|[^>])*>|<(?![A-Za-z\/!])|<\/?[A-Za-z](?:\"[^\"]*\"|'[^']*'|[^<>\"'])*>|[^<]+/gi)||[];
   let depth=0,out=[];
   const push=(txt,d)=>{const t=txt.trim();if(t)out.push('  '.repeat(d)+t)};
   for(const tk of chunks){
-    if(tk.startsWith('<!--')||/^<!doctype/i.test(tk)){push(tk,depth);continue}
+    if(tk.startsWith('<\!--')||/^<!doctype/i.test(tk)){push(tk,depth);continue}
     const ss=tk.match(/^<(script|style)(\s[^>]*)?>([\s\S]*)<\/\1\s*>$/i);
     if(ss){
       push('<'+ss[1].toLowerCase()+(ss[2]||'')+'>',depth);
