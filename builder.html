@@ -56,7 +56,7 @@ function draw(){const iw=frame.contentWindow;if(!iw||!iw.UI||!iw.KV){const d=iw&
  if(!state.length){const e=d.createElement('div');e.className='bd-empty';e.textContent='Click or drag a component to start';app.append(e)}
  state.forEach(n=>{const w=d.createElement('div');w.className='bd-block'+(n.id===sel?' sel':'');w.dataset.id=n.id;w.dataset.type=n.type;
   try{w.append(new Function('UI','return '+C[n.type].make.toString())(iw.UI)(n.props).render())}catch(e){w.textContent='Error: '+e.message}
-  w.addEventListener('click',e=>{e.preventDefault();select(n.id)});app.append(w)});
+  w.addEventListener('click',e=>{if(e.target.closest('a'))e.preventDefault();select(n.id)});app.append(w)});
  iw.KV.init();iw.KV.start();iw.scrollTo(0,y)}
 function select(i){sel=i;insp();[...frame.contentDocument.querySelectorAll('.bd-block')].forEach(b=>b.classList.toggle('sel',b.dataset.id===i))}
 function add(t,at){const n=node(t);const i=at==null?(sel?state.findIndex(x=>x.id===sel)+1:state.length):at;state.splice(i,0,n);sel=n.id;commit(true);
@@ -95,5 +95,5 @@ $('#dev').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)
 document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if((e.key==='Delete'||e.key==='Backspace')&&sel){e.preventDefault();del()}if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();restore(hi-1)}if((e.ctrlKey||e.metaKey)&&e.key==='y'){e.preventDefault();restore(hi+1)}});
 const base=new URL('./',location.href).href;
 frame.addEventListener('load',()=>{let s=null;try{s=JSON.parse(localStorage.getItem('kv-builder'))}catch(e){}state=(s&&s.length?s:PRESETS.saas[1]).filter(x=>C[x.type]).map(x=>node(x.type,x.props));commit(true)},{once:true});
-frame.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="${base}css/kivora.css"><style>.bd-block{position:relative;cursor:pointer}.bd-block>*{pointer-events:none}.bd-block:hover{outline:2px dashed #009AD5;outline-offset:-2px}.bd-block.sel{outline:3px solid #F4CE2F;outline-offset:-3px}.bd-empty{padding:120px 24px;text-align:center;color:#888;font:1.2rem sans-serif}.kv-nav{position:relative}</style></head><body><div id="app"></div><script src="${base}js/kivora.js"><\/script></body></html>`;
+frame.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="${base}css/kivora.css"><style>.bd-block{position:relative;cursor:pointer}.bd-block:hover{outline:2px dashed #009AD5;outline-offset:-2px}.bd-block.sel{outline:3px solid #F4CE2F;outline-offset:-3px}.bd-empty{padding:120px 24px;text-align:center;color:#888;font:1.2rem sans-serif}.kv-nav{position:relative}</style></head><body><div id="app"></div><script src="${base}js/kivora.js"><\/script></body></html>`;
 </script></body></html>
