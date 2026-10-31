@@ -1,14 +1,15 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kivora Visual Builder</title><link rel="stylesheet" href="css/kivora.css">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kivora Visual Builder</title><link rel="stylesheet" href="css/kivora.css"><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#2B2E42"><link rel="apple-touch-icon" href="icon-192.png">
 <style>
 html,body{height:100%}body{display:grid;grid-template-rows:auto 1fr;overflow:hidden}
 .tb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px 16px;background:var(--navy);color:#fff}.tb a{color:#d6d8e6;text-decoration:none;font-size:.85rem}.tb .kv-btn{padding:6px 14px;font-size:.85rem}.tb .sp{flex:1}.tb .kv-btn-outline{color:#fff}.tb .on{background:var(--yellow);color:var(--navy)}
 .tb select{padding:6px 10px;border-radius:10px;border:0;font:inherit;font-size:.85rem}
 .ws{display:grid;grid-template-columns:230px 1fr 330px;min-height:0}.pal,.insp{overflow:auto;padding:16px;background:var(--surface)}
-.pal h4,.insp h4{margin:0 0 8px;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.pal .it{display:flex;gap:10px;align-items:center;width:100%;margin-bottom:8px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);font:inherit;cursor:grab;text-align:left}.pal .it:hover{border-color:var(--yellow)}.pal .it b{width:28px;text-align:center;color:var(--orange)}
+.pal h4,.insp h4{margin:0 0 8px;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.pal .it{display:flex;gap:10px;align-items:center;width:100%;margin-bottom:8px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);font:inherit;cursor:grab;text-align:left;touch-action:pan-y}.pal .it:hover{border-color:var(--yellow)}.pal .it b{width:28px;text-align:center;color:var(--orange)}
 .stage{position:relative;background:#c9ccd8;display:flex;justify-content:center;padding:12px;min-height:0;min-width:0}.frame{background:#fff;border:0;height:100%;width:100%;max-width:100%;transition:width .25s;box-shadow:var(--sh)}
 .drop{position:absolute;inset:0;display:none;z-index:5;background:rgba(244,206,47,.15);border:3px dashed var(--yellow)}.dragging .drop{display:block}
+.drag-ghost{position:fixed;left:0;top:0;z-index:99;pointer-events:none;padding:8px 14px;border-radius:10px;background:var(--navy);color:#fff;font:.85rem sans-serif;box-shadow:var(--sh)}
 .insp .kv-field{margin-bottom:12px}.insp textarea{min-height:90px;font:12px/1.4 ui-monospace,Consolas,monospace}.insp .bad{border-color:var(--red)}.insp .acts{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 16px}.insp .acts .kv-btn{padding:4px 12px;font-size:.8rem}
-@media(max-width:1000px){body{overflow:auto;display:block}.ws{grid-template-columns:1fr}.stage{height:70vh}}
+@media(max-width:1000px){body{overflow:auto;display:block}.ws{grid-template-columns:1fr}.stage{height:70vh}.tb{flex-wrap:nowrap;overflow-x:auto}.tb .sp{flex:0 0 8px}.pal{display:flex;gap:8px;overflow-x:auto;padding:12px}.pal h4{flex:0 0 auto;align-self:center;margin:0}.pal .it{flex:0 0 auto;width:auto;margin-bottom:0;touch-action:pan-x}}
 </style></head><body>
 <div class="tb"><strong>Visual Builder</strong><a href="index.html">Home</a><a href="editor.html">Code Editor</a><span class="sp"></span>
 <select id="preset" aria-label="Start from template"></select>
@@ -83,8 +84,17 @@ const dl=(name,text,type)=>{const a=h('a',{href:URL.createObjectURL(new Blob([te
 /* wiring */
 const pal=$('#pal');Object.entries(C).forEach(([t,c])=>{const b=h('button',{class:'it',draggable:'true',type:'button',data:{type:t}},h('b',{},c.icon),c.label);
  b.addEventListener('click',()=>add(t));b.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',t);document.body.classList.add('dragging')});b.addEventListener('dragend',()=>document.body.classList.remove('dragging'));pal.append(b)});
+/* touch drag: HTML5 drag doesn't fire on touch, so drag palette items with pointer events */
+let td=null,tdGhost=null,tdSupp=false;
+function idxAt(clientY){const fr=frame.getBoundingClientRect(),bl=[...frame.contentDocument.querySelectorAll('.bd-block')];let i=bl.findIndex(b=>{const r=b.getBoundingClientRect();return clientY-fr.top<r.top-fr.top+r.height/2});return i<0?state.length:i}
+pal.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;const b=e.target.closest('.it');if(!b)return;td={t:b.dataset.type,x:e.clientX,y:e.clientY,on:false}});
+pal.addEventListener('pointermove',e=>{if(!td)return;const dx=e.clientX-td.x,dy=e.clientY-td.y;if(!td.on){if(Math.abs(dx)+Math.abs(dy)<14)return;const narrow=innerWidth<=1000;if(narrow?Math.abs(dy)<=Math.abs(dx):Math.abs(dx)<=Math.abs(dy))return;td.on=true;tdGhost=document.createElement('div');tdGhost.className='drag-ghost';tdGhost.textContent=C[td.t].label;document.body.append(tdGhost);document.body.classList.add('dragging')}tdGhost.style.transform=`translate(${e.clientX+14}px,${e.clientY+14}px)`});
+const tdEnd=e=>{if(!td)return;const d=td;td=null;if(tdGhost){tdGhost.remove();tdGhost=null}document.body.classList.remove('dragging');if(!d.on)return;tdSupp=true;setTimeout(()=>tdSupp=false,500);const fr=frame.getBoundingClientRect();if(e.clientX>=fr.left&&e.clientX<=fr.right&&e.clientY>=fr.top&&e.clientY<=fr.bottom)add(d.t,idxAt(e.clientY))};
+pal.addEventListener('pointerup',tdEnd);
+pal.addEventListener('pointercancel',()=>{td=null;if(tdGhost){tdGhost.remove();tdGhost=null}document.body.classList.remove('dragging')});
+pal.addEventListener('click',e=>{if(tdSupp){e.stopPropagation();e.preventDefault();tdSupp=false}},true);
 const dz=$('#drop');dz.addEventListener('dragover',e=>e.preventDefault());dz.addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('dragging');const t=e.dataTransfer.getData('text/plain');if(!C[t])return;
- const fr=frame.getBoundingClientRect(),y=e.clientY-fr.top,bl=[...frame.contentDocument.querySelectorAll('.bd-block')];let i=bl.findIndex(b=>{const r=b.getBoundingClientRect();return y<r.top-fr.top+r.height/2});add(t,i<0?state.length:i)});
+ add(t,idxAt(e.clientY))});
 const ps=$('#preset');Object.entries(PRESETS).forEach(([k,[l]])=>ps.append(h('option',{value:k},k==='blank'?'Start from…':l)));let presetArmed=false,presetTimer;ps.addEventListener('change',()=>{const v=ps.value;if(!v)return;if(state.length&&!presetArmed){presetArmed=true;KV.toast('Choose again to replace the current page','orange');ps.value='blank';clearTimeout(presetTimer);presetTimer=setTimeout(()=>presetArmed=false,5000);return}presetArmed=false;load(PRESETS[v][1]);ps.value='blank'});
 $('#undo').onclick=()=>restore(hi-1);$('#redo').onclick=()=>restore(hi+1);
 let clearArmed=false,clearTimer;const clearBtn=$('#clear');clearBtn.onclick=()=>{if(!state.length)return;if(!clearArmed){clearArmed=true;clearBtn.textContent='Click again to clear';clearTimeout(clearTimer);clearTimer=setTimeout(()=>{clearArmed=false;clearBtn.textContent='Clear'},3000);return}clearArmed=false;clearBtn.textContent='Clear';state=[];sel=null;commit(true)};
@@ -96,4 +106,4 @@ document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(document
 const base=new URL('./',location.href).href;
 frame.addEventListener('load',()=>{let s=null;try{s=JSON.parse(localStorage.getItem('kv-builder'))}catch(e){}state=(s&&s.length?s:PRESETS.saas[1]).filter(x=>C[x.type]).map(x=>node(x.type,x.props));commit(true)},{once:true});
 frame.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="${base}css/kivora.css"><style>.bd-block{position:relative;cursor:pointer}.bd-block:hover{outline:2px dashed #009AD5;outline-offset:-2px}.bd-block.sel{outline:3px solid #F4CE2F;outline-offset:-3px}.bd-empty{padding:120px 24px;text-align:center;color:#888;font:1.2rem sans-serif}.kv-nav{position:relative}</style></head><body><div id="app"></div><script src="${base}js/kivora.js"><\/script></body></html>`;
-</script></body></html>
+</script><script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}</script></body></html>

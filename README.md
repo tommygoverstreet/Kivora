@@ -149,8 +149,17 @@ dark mode with any element carrying `data-kv-theme`, or set
 
 Grids collapse at 800px and 520px; template navigation collapses to a burger
 menu at 700px; the dashboard/docs sidebars become a horizontal wrap row on
-phones; the builder and editor stack their panels on small screens (palette
-tap-to-add works on touch — HTML5 drag does not, so tap is the touch path).
+phones; the builder and editor stack their panels on small screens.
+On touch devices the builder palette drags with pointer events (HTML5 drag
+does not fire on touch): press a component and drag toward the stage to drop
+it at that position, or just tap to add it after the selected block; the
+palette becomes a horizontal swipe row on narrow screens and the toolbar
+becomes a swipeable row. The editor toolbar also swipes on narrow screens,
+the preview/editor splitter has a fatter grab area on touch, and tapping a
+pane header folds it. Carousels swipe left/right on touch (vertical page
+scroll still works), and tables scroll horizontally instead of crushing.
+The site is installable as an app: `manifest.json` + `sw.js` cache the app
+shell for offline use, with generated home-screen icons.
 Touch targets are sized for fingers, and pages print cleanly.
 
 ## Deploy
