@@ -100,7 +100,7 @@ node scripts/sync-data.mjs
 
 ## Code editor
 
-- Three panes (HTML / CSS / JS) with a live preview and an in-page console
+- Four panes (HTML / CSS / JS / JSON) with a live preview and an in-page console
   that captures the preview's logs, warnings, and errors.
 - **Run** (Ctrl/Cmd+Enter), **Auto-run**, layout (side/top), preview width
   (100% / 768px / 390px), and a light/dark editor theme. Work auto-saves
@@ -109,7 +109,7 @@ node scripts/sync-data.mjs
   **JSON: page from a spec** — the `UI.create` format, rendered live.
 - The **Kivora UI** checkbox includes the library in the preview. Download
   and Copy HTML export a clean file (the console-capture helper is stripped).
-- **Wrap** and **Lines** toggles (saved with your work): soft word-wrap for
+- **Wrap** (on by default) and **Lines** toggles (saved with your work): soft word-wrap for
   long lines, and a line-number gutter that stays in sync while scrolling
   (wrap-aware, so numbers track wrapped rows too).
 - **Auto-close**: typing `>` after an opening HTML tag inserts its closing
@@ -124,6 +124,18 @@ node scripts/sync-data.mjs
   nesting (script/style content kept verbatim), CSS by rule and declaration,
   JS by re-indenting to brace depth (template literals and strings are
   never re-indented, so their content stays exact).
+- **Always formatted**: Run, Save, and template switches format every pane
+  first (JSON pretty-prints when valid), so the code stays tidy without
+  touching the Format button. Typing never triggers a format, so your
+  cursor is never yanked mid-thought.
+- **JSON pane**: edit a page spec as raw JSON — the header shows ✓ when it
+  parses, ✗ when it doesn't. On Run, a valid spec mounts into the preview
+  (a `<div id="app">` is added if your HTML doesn't have one); an invalid
+  spec logs its error to the console instead of breaking the preview.
+  Pasting a builder Export JSON here previews it live.
+- **Collapse**: every pane header has a – button that folds that pane to a
+  strip, giving the others room; + unfolds it. Collapsed panes are
+  remembered when you save.
 
 ## Theming
 

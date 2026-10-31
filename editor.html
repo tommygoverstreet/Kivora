@@ -6,15 +6,15 @@ body.light{--bg:#fff;--pn:#f3f3f6;--ln:#d8d9e2;--fg:#2B2E42;--mu:#6b6e85}
 .tb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px 12px;background:var(--pn);border-bottom:1px solid var(--ln)}.tb a{color:var(--mu);text-decoration:none}.tb .sp{flex:1}
 button,select,label.bt{background:var(--bg);color:var(--fg);border:1px solid var(--ln);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}button:hover{border-color:var(--y)}button.go{background:var(--y);color:#2B2E42;border-color:var(--y);font-weight:700}
 .main{display:grid;min-height:0;grid-template-columns:var(--sz) 6px 1fr;grid-template-rows:1fr}.main.top{grid-template-columns:1fr;grid-template-rows:var(--sz) 6px 1fr}
-.eds{display:grid;grid-template-columns:repeat(3,1fr);min-height:0;min-width:0}.main:not(.top) .eds{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr)}
-.ed{display:flex;flex-direction:column;min-height:0;min-width:0;border-right:1px solid var(--ln);border-bottom:1px solid var(--ln)}.ed>b{padding:4px 12px;background:var(--pn);font-size:12px;letter-spacing:.1em;color:var(--mu)}.ed .box{position:relative;flex:1;min-height:0}
+.eds{display:flex;min-height:0;min-width:0}.main:not(.top) .eds{flex-direction:column}
+.ed{display:flex;flex-direction:column;flex:1 1 0;min-height:0;min-width:0;border-right:1px solid var(--ln);border-bottom:1px solid var(--ln)}.ed>b{display:flex;justify-content:space-between;align-items:center;padding:4px 8px 4px 12px;background:var(--pn);font-size:12px;letter-spacing:.1em;color:var(--mu)}.ed .col{background:transparent;border:0;color:var(--mu);padding:2px 8px;cursor:pointer;font:inherit;border-radius:6px}.ed .col:hover{color:var(--fg)}.ed.collapsed{flex:0 0 auto}.ed.collapsed .box{display:none}.ed .box{position:relative;flex:1;min-height:0}
 .box pre,.box textarea{position:absolute;inset:0;margin:0;padding:12px;border:0;font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;overflow:auto;tab-size:2;letter-spacing:0}
 .box pre{pointer-events:none;color:var(--fg)}.box textarea{background:transparent;color:transparent;caret-color:var(--y);resize:none;outline:0}.box textarea::selection{background:rgba(4,121,206,.45);color:transparent}
 .t{color:var(--r)}.a{color:var(--o)}.s{color:var(--m)}.c{color:var(--mu);font-style:italic}.k{color:var(--c)}.n{color:var(--y)}.p{color:var(--b)}body.light .t{color:#c0264a}body.light .s{color:#0d8a6c}body.light .n{color:#b58a00}
 .gut{background:var(--ln);cursor:col-resize}.main.top .gut{cursor:row-resize}
 .res{display:grid;grid-template-rows:1fr auto;min-height:0;min-width:0;background:#fff}.res .vw{display:flex;justify-content:center;background:#c9ccd8;min-height:0}iframe{border:0;background:#fff;height:100%;width:100%;transition:width .25s}
 .con{background:var(--bg);border-top:1px solid var(--ln);max-height:30vh;overflow:auto;font:12px ui-monospace,Consolas,monospace}.con>div{padding:3px 12px;border-bottom:1px solid var(--ln);white-space:pre-wrap}.con .error{color:#ff7a93}.con .warn{color:var(--y)}.con header{position:sticky;top:0;background:var(--pn);padding:4px 12px;display:flex;gap:8px;justify-content:space-between;color:var(--mu);font:12px sans-serif}
-@media(max-width:800px){.main,.main.top{grid-template-columns:1fr;grid-template-rows:55% 6px 1fr}.eds,.main:not(.top) .eds{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr)}}
+@media(max-width:800px){.main,.main.top{grid-template-columns:1fr;grid-template-rows:55% 6px 1fr}.eds,.main:not(.top) .eds{flex-direction:column}}
 .ln{position:absolute;left:0;top:0;bottom:0;width:44px;overflow:hidden;display:none;padding:12px 6px 12px 0;text-align:right;font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:0;color:var(--mu);pointer-events:none;white-space:pre}
 .ln-on .box .ln{display:block}
 .ln-on .box pre,.ln-on .box textarea{padding-left:56px}
@@ -25,16 +25,18 @@ button,select,label.bt{background:var(--bg);color:var(--fg);border:1px solid var
 </style></head><body>
 <div class="tb"><strong>Code Editor</strong><a href="index.html">Home</a><a href="builder.html">Visual Builder</a><span class="sp"></span>
 <select id="tpl" aria-label="Template"></select><button class="go" id="run">▶ Run</button><label class="bt"><input type="checkbox" id="auto" checked> Auto-run</label><label class="bt"><input type="checkbox" id="lib" checked> Kivora UI</label>
-<select id="pw" aria-label="Preview width"><option value="100%">Full width</option><option value="768px">Tablet</option><option value="390px">Mobile</option></select><button id="lay">Layout</button><button id="theme">Theme</button><label class="bt"><input type="checkbox" id="wrap"> Wrap</label><label class="bt"><input type="checkbox" id="ln" checked> Lines</label><button id="fmt">Format</button><button id="save">Save</button><button id="dl">Download</button><button id="cp">Copy HTML</button><button id="fs">Open ↗</button></div>
+<select id="pw" aria-label="Preview width"><option value="100%">Full width</option><option value="768px">Tablet</option><option value="390px">Mobile</option></select><button id="lay">Layout</button><button id="theme">Theme</button><label class="bt"><input type="checkbox" id="wrap" checked> Wrap</label><label class="bt"><input type="checkbox" id="ln" checked> Lines</label><button id="fmt">Format</button><button id="save">Save</button><button id="dl">Download</button><button id="cp">Copy HTML</button><button id="fs">Open ↗</button></div>
 <div class="main" id="main"><div class="eds" id="eds"></div><div class="gut" id="gut"></div><div class="res"><div class="vw"><iframe id="out" title="Result"></iframe></div><div class="con" id="con"><header><span>Console <span id="ec"></span></span><button id="cc" style="padding:0 8px">Clear</button></header></div></div></div>
 <script>
-const $=s=>document.querySelector(s),LANGS=['html','css','js'],ST={html:'',css:'',js:''};
+const $=s=>document.querySelector(s),LANGS=['html','css','js','json'],ST={html:'',css:'',js:''};
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const KW=/\b(const|let|var|function|return|if|else|for|while|new|class|extends|import|from|export|default|async|await|try|catch|throw|this|true|false|null|undefined|of|in|typeof|switch|case|break|continue)\b/g;
 const HL={
  html:s=>esc(s).replace(/(&lt;!--[\s\S]*?--&gt;)|(&lt;\/?)([\w-]+)|("[^"\n]*"|'[^'\n]*')|(\s)([\w:@-]+)(?==)/g,(m,c,o,tg,st,sp,at)=>c?`<span class=c>${c}</span>`:o?`${o}<span class=t>${tg}</span>`:st?`<span class=s>${st}</span>`:`${sp}<span class=a>${at}</span>`),
  css:s=>esc(s).replace(/(\/\*[\s\S]*?\*\/)|("[^"\n]*"|'[^'\n]*')|(#[0-9a-fA-F]{3,8}\b|\b\d+(?:\.\d+)?(?:px|rem|em|%|s|ms|vh|vw|deg)?\b)|(--[\w-]+|[\w-]+(?=\s*:))/g,(m,c,st,n,p)=>c?`<span class=c>${c}</span>`:st?`<span class=s>${st}</span>`:n?`<span class=n>${n}</span>`:`<span class=p>${p}</span>`),
- js:s=>esc(s).replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(`[^`]*`|"[^"\n]*"|'[^'\n]*')|(\b\d+(?:\.\d+)?\b)|(\b(?:const|let|var|function|return|if|else|for|while|new|class|extends|import|from|export|default|async|await|try|catch|throw|this|true|false|null|undefined|of|in|typeof|switch|case|break|continue)\b)/g,(m,c,st,n,k)=>c?`<span class=c>${c}</span>`:st?`<span class=s>${st}</span>`:n?`<span class=n>${n}</span>`:`<span class=k>${k}</span>`)};
+ js:s=>esc(s).replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(`[^`]*`|"[^"\n]*"|'[^'\n]*')|(\b\d+(?:\.\d+)?\b)|(\b(?:const|let|var|function|return|if|else|for|while|new|class|extends|import|from|export|default|async|await|try|catch|throw|this|true|false|null|undefined|of|in|typeof|switch|case|break|continue)\b)/g,(m,c,st,n,k)=>c?`<span class=c>${c}</span>`:st?`<span class=s>${st}</span>`:n?`<span class=n>${n}</span>`:`<span class=k>${k}</span>`),
+ json:s=>esc(s).replace(/("[^"\n]*")|(\b\d+(?:\.\d+)?\b)|(\btrue\b|\bfalse\b|\bnull\b)/g,(m,st,n,lit)=>st?`<span class=s>${st}</span>`:n?`<span class=n>${n}</span>`:`<span class=k>${lit}</span>`)
+};
 const TPL={
 blank:{n:'Blank',lib:true,html:'<h1>Hello</h1>',css:'body{font-family:sans-serif;padding:2rem}',js:'console.log("ready")'},
 hero:{n:'Kivora hero + cards',lib:true,html:`<header class="kv-nav"><div class="kv-container"><span class="kv-logo">Kivora</span><nav><a href="#a">Features</a><a href="#b">Pricing</a></nav><button class="kv-btn kv-btn-sm">Sign up</button></div></header>
@@ -82,6 +84,7 @@ function suggestFor(lang,word,before){
     if(/<$/.test(before))pool=HTML_TAGS;
     else{const cm=before.match(/class\s*=\s*"[^"]*$/);pool=cm?KV_CLASSES:HTML_TAGS.concat(KV_CLASSES);}
   }else if(lang==='js'){pool=JS_WORDS;}
+  else if(lang==='json'){pool=JSON_TYPES;}
   else{pool=CSS_PROPS.concat(KV_CLASSES);}
   const low=word.toLowerCase();
   const pre=pool.filter(w=>w.toLowerCase().startsWith(low)&&w!==word);
@@ -232,13 +235,7 @@ function applyToggles(){
   eds.classList.toggle('wrap-on',$('#wrap').checked);
   LANGS.forEach(updateLN);
 }
-function formatActive(){
-  const l=activeLang,ta=TA[l],v=ta.value;
-  const f=l==='html'?formatHTML:l==='css'?formatCSS:formatJS;
-  const out=f(v);if(out===v)return;
-  const pos=ta.selectionStart;ta.value=out;paint(l);updateLN(l);hideSug();
-  ta.selectionStart=ta.selectionEnd=Math.min(pos,out.length);sched();
-}
+function formatActive(){formatPane(activeLang);if(activeLang==='json')jsonHead();hideSug();sched()}
 /* ---- text prediction: dropdown under the caret, Tab/Enter to accept ---- */
 let sugBox=null,sugItems=[],sugSel=0,sugLang=null,sugWord=null;
 const sugMirror=document.createElement('div');
@@ -291,19 +288,27 @@ function sugKey(e,l){
   return false;
 }
 /* editors */
-const eds=$('#eds'),TA={},PRE={};
+const eds=$('#eds'),TA={},PRE={},ED={},HDR={};
 LANGS.forEach(l=>{const box=document.createElement('div');box.className='box';const pre=document.createElement('pre');pre.innerHTML='<code></code>';const ta=document.createElement('textarea');ta.spellcheck=false;ta.setAttribute('aria-label',l.toUpperCase()+' code');const ln=document.createElement('div');ln.className='ln';box.append(pre,ta,ln);
- const w=document.createElement('div');w.className='ed';w.innerHTML=`<b>${l.toUpperCase()}</b>`;w.append(box);eds.append(w);TA[l]=ta;PRE[l]=pre.firstChild;LN[l]=ln;
+ const w=document.createElement('div');w.className='ed';w.innerHTML=`<b><span>${l.toUpperCase()}</span><button class="col" aria-label="Collapse pane">–</button></b>`;w.append(box);eds.append(w);TA[l]=ta;PRE[l]=pre.firstChild;LN[l]=ln;ED[l]=w;HDR[l]=w.querySelector('span');const cb=w.querySelector('.col');cb.onclick=()=>{const c=w.classList.toggle('collapsed');cb.textContent=c?'+':'–'};
  ta.addEventListener('focus',()=>{activeLang=l});
- ta.addEventListener('input',()=>{paint(l);updateLN(l);suggest(l);sched()});ta.addEventListener('scroll',()=>{pre.scrollTop=ta.scrollTop;pre.scrollLeft=ta.scrollLeft;ln.scrollTop=ta.scrollTop;hideSug()});ta.addEventListener('blur',()=>{hideSug()});
- ta.addEventListener('keydown',e=>{if(sugKey(e,l))return;if(autoClose(e,ta,l))return;if(e.key==='Tab'){e.preventDefault();ins(ta,'  ')}else if(e.key==='Enter'&&!(e.ctrlKey||e.metaKey)){const s=ta.selectionStart,line=ta.value.slice(0,s).split('\n').pop(),ind=line.match(/^\s*/)[0]+(/[{(\[]$/.test(line.trim())?'  ':'');e.preventDefault();ins(ta,'\n'+ind)}else if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();run()}})});
+ ta.addEventListener('input',()=>{paint(l);updateLN(l);if(l==='json')jsonHead();suggest(l);sched()});ta.addEventListener('scroll',()=>{pre.scrollTop=ta.scrollTop;pre.scrollLeft=ta.scrollLeft;ln.scrollTop=ta.scrollTop;hideSug()});ta.addEventListener('blur',()=>{hideSug()});
+ ta.addEventListener('keydown',e=>{if(sugKey(e,l))return;if(autoClose(e,ta,l))return;if(e.key==='Tab'){e.preventDefault();ins(ta,'  ')}else if(e.key==='Enter'&&!(e.ctrlKey||e.metaKey)){const s=ta.selectionStart,line=ta.value.slice(0,s).split('\n').pop(),ind=line.match(/^\s*/)[0]+(/[{(\[]$/.test(line.trim())?'  ':'');e.preventDefault();ins(ta,'\n'+ind)}else if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();runFmt()}})});
 function ins(ta,t){ta.focus();if(!document.execCommand('insertText',false,t)){const s=ta.selectionStart;ta.setRangeText(t,s,ta.selectionEnd,'end');ta.dispatchEvent(new Event('input'))}}
 function paint(l){PRE[l].innerHTML=HL[l](TA[l].value)+'\n'}
-function setCode(o){LANGS.forEach(l=>{TA[l].value=o[l];paint(l);updateLN(l)});$('#lib').checked=o.lib}
+function setCode(o){LANGS.forEach(l=>{TA[l].value=o[l]||''});formatAll();$('#lib').checked=o.lib}
+const JSON_TYPES=['Page','Navbar','Hero','Section','Grid','Card','Stat','Chart','Table','Tabs','Accordion','Modal','Carousel','Pricing','Timeline','Dropdown','Footer','Btn','Badge','Alert'];
+function jsonHead(){const h=HDR.json;if(!h)return;const v=TA.json.value.trim();if(!v){h.textContent='JSON';return}try{JSON.parse(v);h.textContent='JSON ✓'}catch(e){h.textContent='JSON ✗'}}
+function formatPane(l){const ta=TA[l],v=ta.value;let out=v;if(l==='json'){const t=v.trim();if(t){try{out=JSON.stringify(JSON.parse(t),null,2)}catch(e){out=v}}}else{const f=l==='html'?formatHTML:l==='css'?formatCSS:formatJS;out=f(v)}if(out!==v){const pos=ta.selectionStart;ta.value=out;ta.selectionStart=ta.selectionEnd=Math.min(pos,out.length)}paint(l);updateLN(l)}
+function formatAll(){LANGS.forEach(formatPane);jsonHead();hideSug()}
+function runFmt(){formatAll();run();const js=jsonSpec();if(!js.ok&&!js.empty)log('error',['Invalid JSON: '+js.err])}
 /* run */
 const cap=function(){['log','info','warn','error'].forEach(k=>{const o=console[k];console[k]=(...a)=>{parent.postMessage({kvc:k,a:a.map(x=>{try{return typeof x==='object'?JSON.stringify(x):String(x)}catch(e){return String(x)}})},'*');o.apply(console,a)}});addEventListener('error',e=>parent.postMessage({kvc:'error',a:[e.message+' (line '+e.lineno+')']},'*'));addEventListener('unhandledrejection',e=>parent.postMessage({kvc:'error',a:['Unhandled: '+e.reason]},'*'))};
-function doc(){const base=new URL('./',location.href).href,lib=$('#lib').checked;
- return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${lib?`<link rel="stylesheet" href="${base}css/kivora.css">`:''}<script>(${cap})()<\/script><style>${TA.css.value}</style></head><body>${TA.html.value}${lib?`<script src="${base}js/kivora.js"><\/script>`:''}<script>${TA.js.value}<\/script></body></html>`}
+function jsonSpec(){const v=TA.json.value.trim();if(!v)return {ok:false,empty:true};try{return {ok:true,spec:JSON.parse(v)}}catch(e){return {ok:false,empty:false,err:e.message}}}
+function doc(){const base=new URL('./',location.href).href,lib=$('#lib').checked,js=jsonSpec();
+ let body=TA.html.value,mount='';
+ if(lib&&js.ok){if(!/id\s*=\s*["']app["']/.test(body))body='<div id="app"></div>'+body;mount=`<script>try{UI.create(${JSON.stringify(js.spec).replace(/<\//g,'<\\/')}).mount('#app')}catch(e){console.error(e)}<\/script>`}
+ return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${lib?`<link rel="stylesheet" href="${base}css/kivora.css">`:''}<script>(${cap})()<\/script><style>${TA.css.value}</style></head><body>${body}${lib?`<script src="${base}js/kivora.js"><\/script>`:''}<script>${TA.js.value}<\/script>${mount}</body></html>`}
 let tm,errs=0;const con=$('#con');
 function log(k,a){const d=document.createElement('div');d.className=k;d.textContent=a.join(' ');con.append(d);if(k==='error'){errs++;$('#ec').textContent='('+errs+' errors)'}con.scrollTop=con.scrollHeight}
 function clearCon(){[...con.children].slice(1).forEach(x=>x.remove());errs=0;$('#ec').textContent=''}
@@ -313,7 +318,7 @@ addEventListener('message',e=>{if(e.source===$('#out').contentWindow&&e.data&&e.
 /* ui */
 const sel=$('#tpl');Object.entries(TPL).forEach(([k,v])=>sel.append(new Option(v.n,k)));
 sel.onchange=()=>{setCode(TPL[sel.value]);run()};
-$('#run').onclick=run;$('#cc').onclick=clearCon;$('#pw').onchange=e=>$('#out').style.width=e.target.value;
+$('#run').onclick=runFmt;$('#cc').onclick=clearCon;$('#pw').onchange=e=>$('#out').style.width=e.target.value;
 $('#lay').onclick=()=>{$('#main').classList.toggle('top');$('#main').style.removeProperty('--sz')};
 $('#theme').onclick=()=>{document.body.classList.toggle('light');try{localStorage.setItem('kv-ed-theme',document.body.classList.contains('light')?'l':'d')}catch(e){}};
 $('#wrap').onchange=applyToggles;$('#ln').onchange=applyToggles;$('#fmt').onclick=formatActive;
@@ -321,7 +326,7 @@ const file=()=>{const lib=$('#lib').checked;let h=doc(lib);return lib?h.replace(
 $('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([file()],{type:'text/html'}));a.download='page.html';document.body.append(a);a.click();a.remove()};
 $('#cp').onclick=()=>navigator.clipboard.writeText(file()).then(()=>log('info',['HTML copied to clipboard']));
 $('#fs').onclick=()=>window.open(URL.createObjectURL(new Blob([file()],{type:'text/html'})),'_blank');
-function save(){try{localStorage.setItem('kv-ed',JSON.stringify({html:TA.html.value,css:TA.css.value,js:TA.js.value,lib:$('#lib').checked,tpl:sel.value,wrap:$('#wrap').checked,ln:$('#ln').checked}))}catch(e){}log('info',['Saved'])}
+function save(){formatAll();try{localStorage.setItem('kv-ed',JSON.stringify({html:TA.html.value,css:TA.css.value,js:TA.js.value,lib:$('#lib').checked,tpl:sel.value,wrap:$('#wrap').checked,ln:$('#ln').checked,json:TA.json.value,col:LANGS.filter(l=>ED[l].classList.contains('collapsed'))}))}catch(e){}log('info',['Saved'])}
 $('#save').onclick=save;$('#lib').onchange=run;
 addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();save()}else if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==='F'||e.key==='f')){e.preventDefault();formatActive()}});
 const g=$('#gut');g.addEventListener('pointerdown',e=>{g.setPointerCapture(e.pointerId);const m=$('#main'),top=m.classList.contains('top'),r=m.getBoundingClientRect(),mv=ev=>{const p=top?(ev.clientY-r.top)/r.height:(ev.clientX-r.left)/r.width;m.style.setProperty('--sz',Math.min(80,Math.max(20,p*100))+'%')};g.onpointermove=mv;g.onpointerup=()=>{g.onpointermove=null;LANGS.forEach(updateLN)}});
@@ -329,6 +334,6 @@ let rsT;addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(()=>LANG
 try{if(localStorage.getItem('kv-ed-theme')==='l')document.body.classList.add('light')}catch(e){}
 let st=null;try{st=JSON.parse(localStorage.getItem('kv-ed'))}catch(e){}
 if(st&&st.html!=null){sel.value=TPL[st.tpl]?st.tpl:'hero';setCode(st)}else{sel.value='hero';setCode(TPL.hero)}
-try{$('#wrap').checked=!!(st&&st.wrap);$('#ln').checked=!st||st.ln!==false}catch(e){}applyToggles();
+try{$('#wrap').checked=!st||st.wrap!==false;$('#ln').checked=!st||st.ln!==false}catch(e){}applyToggles();try{((st&&st.col)||[]).forEach(l=>{if(ED[l]){ED[l].classList.add('collapsed');const b=ED[l].querySelector('.col');if(b)b.textContent='+'}})}catch(e){}
 run();
 </script></body></html>
