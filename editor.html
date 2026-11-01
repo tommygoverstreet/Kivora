@@ -195,6 +195,8 @@ function autoClose(e,ta,lang){
   }
   if(e.key==='>'){
     if(lang!=='html')return false;
+    const am=after.match(/^<\/([A-Za-z][\w-]*)>/),bm=before.match(/<\/([A-Za-z][\w-]*)$/);
+    if(am&&bm&&am[1].toLowerCase()===bm[1].toLowerCase()){e.preventDefault();const pl=bm[0].length;ta.setRangeText('',s-pl,s,'end');ta.selectionStart=ta.selectionEnd=s-pl+am[0].length;ta.dispatchEvent(new Event('input'));return true}
     const m=before.match(/<([A-Za-z][\w-]*)([^<>]*)$/);
     if(!m)return false;
     const tag=m[1].toLowerCase(),rest=m[2];
@@ -203,7 +205,7 @@ function autoClose(e,ta,lang){
     if(q%2===1)return false;
     const lineAfter=after.split('\n')[0];
     if(lineAfter.includes('</'+tag+'>'))return false;
-    e.preventDefault();ins(ta,'</'+tag+'>');ta.selectionStart=ta.selectionEnd=s;return true;
+    e.preventDefault();ins(ta,'></'+tag+'>');ta.selectionStart=ta.selectionEnd=s+1;return true;
   }
   if(PAIRS[e.key]){
     if(after[0]===e.key){e.preventDefault();ta.selectionStart=ta.selectionEnd=s+1;return true}
