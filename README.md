@@ -136,10 +136,14 @@ node scripts/sync-data.mjs
 - **Collapse**: every pane header has a – button that folds that pane to a
   strip, giving the others room; + unfolds it. Collapsed panes are
   remembered when you save.
-- **Phone layout**: on narrow screens the editor stacks (editors above
-  preview) and shows one pane at a time with an HTML/CSS/JS/JSON tab row —
-  tap a tab to switch panes. The toolbar swipes sideways to reach Run,
-  Format, and Save, and the splitter has a fatter grab area on touch.
+- **Phone layout**: on narrow screens the editor behaves like an app, not
+  a website: a bottom tab bar (HTML/CSS/JS/JSON/Preview) switches between
+  full-screen views — one pane at a time for editing, Preview as its own
+  screen — instead of split panes. The top bar stays slim (template,
+  Run, and a ⋯ menu holding everything else), content respects the notch
+  and home-bar safe areas, code is set at 16px so tapping into it never
+  triggers the iOS input-zoom jump, and the page is installable to the
+  home screen for a full-screen standalone launch.
 
 ## Theming
 
