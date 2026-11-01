@@ -136,6 +136,10 @@ node scripts/sync-data.mjs
 - **Collapse**: every pane header has a – button that folds that pane to a
   strip, giving the others room; + unfolds it. Collapsed panes are
   remembered when you save.
+- **Phone layout**: on narrow screens the editor stacks (editors above
+  preview) and shows one pane at a time with an HTML/CSS/JS/JSON tab row —
+  tap a tab to switch panes. The toolbar swipes sideways to reach Run,
+  Format, and Save, and the splitter has a fatter grab area on touch.
 
 ## Theming
 
